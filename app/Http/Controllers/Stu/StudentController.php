@@ -28,6 +28,10 @@ class StudentController extends Controller {
         return view('stu.home', compact('grade'));
     }
 
+    /**
+     * 返回修改资料页面
+     * @return [type] [description]
+     */
     public function edit()
     {
         return view('stu.edit');
