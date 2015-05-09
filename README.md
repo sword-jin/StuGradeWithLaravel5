@@ -7,5 +7,5 @@
 
 <a name="feature1"></a>
 ##组件链接和文档
-*Laravel 5.0(这个大家都懂，最基本的)
-*[Bootstrap 3.3.4](http://v3.bootcss.com/)
+* Laravel 5.0(这个大家都懂，最基本的)
+* [Bootstrap 3.3.4](http://v3.bootcss.com/)
