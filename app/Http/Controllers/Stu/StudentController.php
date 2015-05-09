@@ -10,11 +10,17 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller {
 
+    /**
+     * 只允许登录用户访问
+     */
     public function __construct()
     {
         $this->middleware('auth');
     }
 
+    /**
+     * 返回学生主页
+     */
 	public function home()
     {
         $grade = Auth::user()->grade;

@@ -21,7 +21,7 @@ Route::get('/', 'WelcomeController@index');
 Route::get('login', [
     'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
 Route::post('login', [
-    'middleware' => 'guest', 'loginController@loginPost']);
+    'middleware' => 'guest', 'uses' => 'loginController@loginPost']);
 Route::get('logout', [
     'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
 
