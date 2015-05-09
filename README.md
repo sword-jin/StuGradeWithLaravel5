@@ -247,4 +247,4 @@ index方法返回的是welcome页面.
 
 @include('flash')先注释掉，这里暂时还不需要.
 
-![Index](http://img1.ph.126.net/pRjUZktUgK5ubWB1S7nZPg==/6630846763862412922.jpg)
+![Index](http://img1.ph.126.net/HmhY3w2qYDWr4RyQKdcfiQ==/6630430048955199565.jpg)
