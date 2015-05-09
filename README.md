@@ -1,6 +1,6 @@
 # StuGradeWithLaravel5
 
-一个简易的学生成绩管理，查询系统，仅供新手学习参考。
+一个简易的学生成绩管理，查询系统，仅供新手学习参考。QQ:215672398 有什么好的想法，或是建议，不明白的都可以来找我讨论。
 
 ## 下面，我们开始，我也是从一个新手(伸手党)走过来的，这次自己写一个教程给刚学习laravel，或者感到困惑的同学，我会尽量详细每一个重要的步骤。
 * [系统的功能简介](#feature1)
@@ -130,4 +130,117 @@
 -----
 
 <a name="feature6"></a>
+## 开始学习
+首先，讲讲的我自己的学习思路，拿到一个应用的源代码，我会先看路由，每一个路由对应着什么功能，其中有什么细节，怎么去实现，这是我最希望能学到的。在编码的时候，我个人是路由-功能去完成的，可能这是新手的方法，有大牛能指导一下能更好。所以，我从逐步从路由开始说起，一步一步的编码过程。
 
+安装好laravel，配置好环境之后，我执行了
+
+    php artisan fresh
+
+只留下了laravel自带的主页路由 Route::get('/', 'WelcomeController@index');
+
+然后导入我们的数据表，填充默认数据进行测试。
+
+打开 /database/migrations/._create_users_table.php,修改up方法
+
+    public function up()
+    {
+        Schema::create('users', function(Blueprint $table)
+        {
+            $table->integer('id')->unique()->unsigned();  #学号，唯一，取正数
+            $table->string('name');                       #姓名
+            $table->string('password');                   #密码
+            $table->string('phone')->default('');  #手机 默认为空(不是可以为空，值为'')
+            $table->string('sex')->default('');    #性别 同上
+            $table->string('email')->default('');  #邮箱 同上
+            $table->string('pro_class')->default(''); #班级 同上
+            $table->boolean('is_admin')->default(0);  #是否为管理员 默认为学生
+            $table->rememberToken();
+            $table->timestamps();
+        });
+    }
+
+这里为什么这么写，首先我觉的老师新增学生时候是没有填写他信息的权限的，只能生成学号，姓名。密码，所以其他都默认为空，需要学生登录后自己去填写
+
+下面开始有任何不确定的都可以去看源代码对比
+
+找到WelcomeController.php,可以看到两段代码:
+
+    public function __construct()
+    {
+        $this->middleware('guest');
+    }
+
+    public function index()
+    {
+        return view('welcome');
+    }
+
+上面的构造函数，有什么作用？里面的中间件guest,在Kernel.php 中的routeMiddleware数组里面有注册,它的功能在App\Http\Middleware\RedirectIfAuthenticated.php里面可以看到。
+
+可以理解为登录之后要是还想访问主页，就会自动跳转，跳转细节后面在说。
+
+index方法返回的是welcome页面.
+
+这时候，我们先构建一个基础页面模版，因为后面的每个页面都是需要继承它的.创建 master.blade.php文件.
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> @yield('title') </title>
+    <link rel="stylesheet" type="text/css" href="{{ asset('/css/all.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle Navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @if(Auth::guest())
+                    <a class="navbar-brand" href="/">学生成绩管理</a>
+                @else
+                    @if (Auth::user()->is_admin)
+                        <a class="navbar-brand" href="/admin">学生成绩管理</a>
+                    @else
+                        <a class="navbar-brand" href="/">学生成绩管理</a>
+                    @endif
+                @endif
+
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="http://www.golaravel.com" target="__blank">Power by laravel5</a></li>
+            </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    @if (Auth::guest())
+                    @else
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ Auth::user()->name }} <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="{{ url('/logout') }}">退出</a></li>
+                            </ul>
+                        </li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        @include('flash')
+    </div>
+
+    @yield('content')
+
+<!-- script -->
+<script type="text/javascript" src="/js/all.js"></script>
+</body>
+</html>
