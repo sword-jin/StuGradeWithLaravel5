@@ -1,10 +1,10 @@
 # StuGradeWithLaravel5
 
-一个简易的学生成绩管理，查询系统，仅供新手学习参考。QQ:215672398 有什么好的想法，或是建议，不明白的都可以来找我讨论。
+一个简易的学生成绩管理,查询系统,仅供新手学习参考。QQ:215672398 有什么好的想法,或是建议,不明白的都可以来找我讨论。
 
-## 下面，我们开始，我也是从一个新手(伸手党)走过来的，这次自己写一个教程给刚学习laravel，或者感到困惑的同学，我会尽量详细每一个重要的步骤。
+## 下面,我们开始,我也是从一个新手(伸手党)走过来的,这次自己写一个教程给刚学习laravel,或者感到困惑的同学,我会尽量详细每一个重要的步骤。
 * [系统的功能简介](#feature1)
-* [需要的一些组件，库](#feature2)
+* [需要的一些组件,库](#feature2)
 * [一些源文件位置说明](#feature3)
 * [运行环境](#feature4)
 * [安装](#feature5)
@@ -13,19 +13,19 @@
 <a name="feature2"></a>
 ## 功能
 * 学生端
-    * 登录完善修改个人信息，查看成绩
-    * 修改密码，验证邮件(待完善)
+    * 登录完善修改个人信息,查看成绩
+    * 修改密码,验证邮件(待完善)
 * 管理员
-    * 登录能查看所有学生信息，包括新增学生，删除学生
-    * 能更新学生成绩，没有修改学生信息的权限
+    * 登录能查看所有学生信息,包括新增学生,删除学生
+    * 能更新学生成绩,没有修改学生信息的权限
     * 下载学生信息Excel,学生成绩Excel
-    * 上传学生名单Excel，更新数据库(待完善)
-    * 上传学生成绩Excel，更新数据库(待完善)
+    * 上传学生名单Excel,更新数据库(待完善)
+    * 上传学生成绩Excel,更新数据库(待完善)
 
 -----
 <a name="feature2"></a>
 ## 组件链接和文档
-* Laravel 5.0(这个大家都懂，最基本的)
+* Laravel 5.0(这个大家都懂,最基本的)
 * [Bootstrap 3.3.4](http://v3.bootcss.com/)
 * gulp,前端自动化工具,(官网被墙了),推荐laravel文档中的安装gulp. [link](http://www.golaravel.com/laravel/docs/5.0/elixir/)
 * [TableSorter](http://tablesorter.com/docs/) 表格排序插件
@@ -35,7 +35,7 @@
 <a name="feature3"></a>
 ## 说明
 * TableSorter ----- resources/js/jquery.tablesorter.min.js
-* Bootstarp   ----- 需要引入bootstarp的font文件(不引入会出现一些问题，见下文)
+* Bootstarp   ----- 需要引入bootstarp的font文件(不引入会出现一些问题,见下文)
 * resources/js/main.js  ----- 系统功能完善js脚本(意思就是自己写的)
 * resources/css/main/css ----- 同上
 
@@ -54,7 +54,7 @@
 * [2: Composer管理依赖关系的工具](#step2)
 * [3: 配置文件](#step3)
 * [4: 安装gulp工具和Laravel Elixir](#step4)
-* [5: 转移数据表，填充数据](#step5)
+* [5: 转移数据表,填充数据](#step5)
 * [6: 开始](#step6)
 
 -----
@@ -111,7 +111,7 @@
 <a name="step6"></a>
 ### 6: 登录开始
 
-数据库有3个默认用户(当然你可以在数据库里删除，自己添加，这里只是测试)
+数据库有3个默认用户(当然你可以在数据库里删除,自己添加,这里只是测试)
 这里的相关信息可以在 /database/seeds/UserTableSeeder.php 找到
 
 管理员:
@@ -131,15 +131,17 @@
 
 <a name="feature6"></a>
 ## 开始学习
-首先，讲讲的我自己的学习思路，拿到一个应用的源代码，我会先看路由，每一个路由对应着什么功能，其中有什么细节，怎么去实现，这是我最希望能学到的。在编码的时候，我个人是路由-功能去完成的，可能这是新手的方法，有大牛能指导一下能更好。所以，我从逐步从路由开始说起，一步一步的编码过程。
+首先,讲讲的我自己的学习思路,拿到一个应用的源代码,我会先看路由,每一个路由对应着什么功能,其中有什么细节,怎么去实现,这是我最希望能学到的。在编码的时候,我个人是路由-功能去完成的,可能这是新手的方法,有大牛能指导一下能更好。所以,我从逐步从路由开始说起,一步一步的编码过程。
 
-安装好laravel，配置好环境之后，我执行了
+####建议,开两个编辑器,一个用来看前面安装好的源代码,一个用来进行下面的学习
+
+安装好laravel,配置好环境之后,我执行了
 
     php artisan fresh
 
 只留下了laravel自带的主页路由 Route::get('/', 'WelcomeController@index');
 
-然后导入我们的数据表，填充默认数据进行测试。
+然后导入我们的数据表,填充默认数据进行测试。
 
 打开 /database/migrations/._create_users_table.php,修改up方法
 
@@ -147,10 +149,10 @@
     {
         Schema::create('users', function(Blueprint $table)
         {
-            $table->integer('id')->unique()->unsigned();  #学号，唯一，取正数
+            $table->integer('id')->unique()->unsigned();  #学号,唯一,取正数
             $table->string('name');                       #姓名
             $table->string('password');                   #密码
-            $table->string('phone')->default('');  #手机 默认为空(不是可以为空，值为'')
+            $table->string('phone')->default('');  #手机 默认为空(不是可以为空,值为'')
             $table->string('sex')->default('');    #性别 同上
             $table->string('email')->default('');  #邮箱 同上
             $table->string('pro_class')->default(''); #班级 同上
@@ -160,7 +162,13 @@
         });
     }
 
-这里为什么这么写，首先我觉的老师新增学生时候是没有填写他信息的权限的，只能生成学号，姓名。密码，所以其他都默认为空，需要学生登录后自己去填写
+这里为什么这么写,首先我觉的老师新增学生时候是没有填写他信息的权限的,只能生成学号,姓名。密码,所以其他都默认为空,需要学生登录后自己去填写。
+
+然后在User.php中修改$fillable数组
+
+    protected $fillable = ['name', 'email', 'is_admin', 'password', 'sex', 'phone', 'pro_class'];
+
+什么意思,我也不是很清楚,这样写了储存user到数据库,输出user属性就不会出问题,至于具体为啥,怪我没有深入,下面继续。
 
 下面开始有任何不确定的都可以去看源代码对比
 
@@ -176,13 +184,13 @@
         return view('welcome');
     }
 
-上面的构造函数，有什么作用？里面的中间件guest,在Kernel.php 中的routeMiddleware数组里面有注册,它的功能在App\Http\Middleware\RedirectIfAuthenticated.php里面可以看到。
+上面的构造函数,有什么作用？里面的中间件guest,在Kernel.php 中的routeMiddleware数组里面有注册,它的功能在App\Http\Middleware\RedirectIfAuthenticated.php里面可以看到。
 
-可以理解为登录之后要是还想访问主页，就会自动跳转，跳转细节后面在说。
+可以理解为登录之后要是还想访问主页,就会自动跳转,跳转细节后面在说。
 
 index方法返回的是welcome页面.
 
-这时候，我们先构建一个基础页面模版，因为后面的每个页面都是需要继承它的.创建 master.blade.php文件.
+这时候,我们先构建一个基础页面模版,因为后面的每个页面都是需要继承它的.创建 master.blade.php文件.
 
     <!DOCTYPE html>
     <html lang="en">
@@ -191,7 +199,7 @@ index方法返回的是welcome页面.
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title> @yield('title') </title>
-        <link rel="stylesheet" type="text/css" href="{{ asset('/css/all.css') }}">
+        <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
     </head>
     <body>
         <nav class="navbar navbar-default">
@@ -241,11 +249,12 @@ index方法返回的是welcome页面.
         @yield('content')
 
     <!-- script -->
-    <script type="text/javascript" src="/js/all.js"></script>
+    <script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     </body>
     </html>
 
-@include('flash')先注释掉，这里暂时还不需要.
+@include('flash')先注释掉,这里暂时还不需要.
 
 创建我们的welcome.blade.php,随便修饰一下(前端不行 :) )
 
@@ -260,7 +269,7 @@ index方法返回的是welcome页面.
             <div class="jumbotron">
                 <h2><div class="quote">{{ Inspiring::quote() }}</div></h2>
                 <p>同学们登录后先修改相关资料</p>
-                <p>查询分数，有疑问咨询管理员</p>
+                <p>查询分数,有疑问咨询管理员</p>
                 <p><a class="btn btn-primary btn-lg" href="/login" role="button">点击登录</a></p>
             </div>
         </div>
@@ -268,7 +277,7 @@ index方法返回的是welcome页面.
 
 ![Index](http://img1.ph.126.net/HmhY3w2qYDWr4RyQKdcfiQ==/6630430048955199565.jpg)
 
-好了，首页已经完成了，来看这三个路由
+好了,首页已经完成了,来看这三个路由
 
     Route::get('login', [
     'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
@@ -277,9 +286,9 @@ index方法返回的是welcome页面.
     Route::get('logout', [
     'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
 
-完成登录登出的功能, 在路由中设置中间件， 过滤一些非法请求，关于中间件，参考[官方文档](www.golaravel.com/laravel/docs/5.0/middleware/)
+完成登录登出的功能, 在路由中设置中间件, 过滤一些非法请求,关于中间件,参考[官方文档](www.golaravel.com/laravel/docs/5.0/middleware/)
 
-guest 只允许游客(没登陆的情况下)访问get路由login和post路由login,要是已经登录，就会跳转到相应页面，注意关键词响应。我们登录用户有两种，学生，和管理员，当他们在登录的情况下要想访问这两个路由，肯定会做出不同的响应。即，学生，跳转到学生主页，管理员，跳转到管理员主页.现在来看看RedirectIfAuthenticated.php
+guest 只允许游客(没登陆的情况下)访问get路由login和post路由login,要是已经登录,就会跳转到相应页面,注意关键词响应。我们登录用户有两种,学生,和管理员,当他们在登录的情况下要想访问这两个路由,肯定会做出不同的响应。即,学生,跳转到学生主页,管理员,跳转到管理员主页.现在来看看RedirectIfAuthenticated.php
 
     public function handle($request, Closure $next)
     {
@@ -296,11 +305,11 @@ guest 只允许游客(没登陆的情况下)访问get路由login和post路由log
         return $next($request);
     }
 
-auth 只有登录用户才能访问(这个不知道怎么表达，我就不误人子弟),看下源码 Authenticate.php
+auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人子弟),看下源码 Authenticate.php
 
     public function handle($request, Closure $next)
     {
-        if ($this->auth->guest())    <!-- 没有登录，是游客 -->
+        if ($this->auth->guest())    <!-- 没有登录,是游客 -->
         {
             if ($request->ajax())           <!-- 通过ajax来请求 -->
             {
@@ -315,4 +324,131 @@ auth 只有登录用户才能访问(这个不知道怎么表达，我就不误�
         return $next($request);
     }
 
-也就是说只有登录了才能登出，就是这个意思。
+也就是说只有登录了才能登出,就是这个意思。
+
+说完了中间件,来看看控制器。loginControlle.php
+
+    /**
+     * 返回login视图,登录页面
+     */
+    public function loginGet()
+    {
+        return view('login');
+    }
+
+    /**
+     * 登录响应
+     */
+    public function loginPost(Request $request)
+    {
+        $this->validate($request, User::rules());
+        $id = $request->get('id');
+        $password = $request->get('password');
+        if (Auth::attempt(['id' => $id, 'password' => $password], $request->get('remember'))) {
+            if (!Auth::user()->is_admin) {
+                return Redirect::route('stu_home');
+            } else {
+                return Redirect::action('Admin\AdminController@index');
+            }
+
+        } else {
+            return Redirect::route('login')
+                ->withInput()
+                ->withErrors('学号或者密码不正确,请重试！');
+        }
+    }
+
+    /**
+     * 用户登出
+     */
+    public function logout()
+    {
+        if (Auth::check()) {
+            Auth::logout();
+        }
+        return Redirect::route('login');
+    }
+
+可以使用validate验证用户输入,在laravel5中使用validate非常方便,注意第二个参数,User::rules(),
+这是在User模型中一个静态方法,接着在User.php中加入静态方法。
+
+    protected static function rules()
+    {
+        return [
+            'id' => 'required|digits:10',   <!-- 代表必需填写,10位数字 -->
+            'password' => 'required'        <!-- 必填 -->
+            ];
+    }
+
+验证用户登录使用了Auth::attempt(),这是laravel中自带的验证方法,非常好用,如果验证通过,接着判断是否是管理员,然后分别跳转到不同的url.
+
+    return Redirect::route('stu_home') -- 对应路由名为stu_home的路由
+    return Redirect::action('Admin\AdminController@index') -- 对于这个index方法
+
+登出使用的是Auth::logout().
+
+这时候点击登录,laravel会告诉你view(login)不存在,创建login.blade.php文件
+
+    @extends('master')
+
+    @section('title')
+        欢迎登录
+    @stop
+
+    @section('content')
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading">登录</div>
+                    <div class="panel-body">
+
+                        @include('errors.list')
+
+                        {!! Form::open(['url' => '/login', 'class' => 'form-horizontal', 'role' => 'form']) !!}
+                            <div class="form-group">
+                                {!! Form::label('id', '学号', ['class' => 'col-md-4 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::text('id', old('id'), ['class' => 'form-control', 'required']) !!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('password', '密码', ['class' => 'col-md-4 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::password('password', ['class' => 'form-control', 'required']) !!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-md-offset-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="remember"> Remember Me
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-md-offset-4">
+                                    {!! Form::submit('Login', ['class' => 'btn btn-primary form-control']) !!}
+                                </div>
+                            </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @stop
+
+这时候要是点击登录,还是会报错,因为在laravel5中Illuminate/Html组件被移了,我们可以在composer.json的required数组中加入
+
+    "illuminate/html": "5.0"
+
+接着执行:
+
+    composer update
+
+等待安装完成之后,就能看到我们的登录页面了
+
+![Login](http://img1.ph.126.net/aBpSfUKwCB34SJXOcbz-Lg==/6630121086187793065.jpg)
+

@@ -32,11 +32,19 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	 */
 	protected $hidden = ['password', 'remember_token'];
 
+	/**
+	 * grades表中的每行数据都有对应的一个用户
+	 * @return [type] [description]
+	 */
 	public function grade()
 	{
 		return $this->hasOne('App\Grade');
 	}
 
+	/**
+	 * 登录验证规则
+	 * @return [type] [description]
+	 */
 	protected static function rules()
 	{
 		return [

@@ -1,7 +1,7 @@
 @extends('master')
 
 @section('title')
-    欢迎进入学生成绩管理系统
+    欢迎登录
 @stop
 
 @section('content')

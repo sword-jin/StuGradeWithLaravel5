@@ -9,11 +9,17 @@ use Illuminate\Http\Request;
 
 class loginController extends Controller {
 
+    /**
+     * 返回login视图,登录页面
+     */
 	public function loginGet()
     {
         return view('login');
     }
 
+    /**
+     * 登录响应
+     */
     public function loginPost(Request $request)
     {
         $this->validate($request, User::rules());
@@ -33,6 +39,9 @@ class loginController extends Controller {
         }
     }
 
+    /**
+     * 用户登出
+     */
     public function logout()
     {
         if (Auth::check()) {
