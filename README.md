@@ -2,7 +2,7 @@
 
 一个简易的学生成绩管理,查询系统,仅供新手学习参考。QQ:215672398 有什么好的想法,或是建议,不明白的都可以来找我讨论。
 
-## 下面,我们开始,我也是从一个新手(伸手党)走过来的,这次自己写一个教程给刚学习laravel,或者感到困惑的同学,我会尽量详细每一个重要的步骤。
+## 下面,我们开始,我也是从一个新手(伸手党)走过来的,这次自己写一个教程给刚学习laravel,或者感到困惑的同学,我会尽量详细每一个重要的步骤。感谢社区,论坛前仆后继的前辈,本教程仅献给像我一样热爱laravel的新手参考学习,谢谢!
 * [系统的功能简介](#feature1)
 * [需要的一些组件,库](#feature2)
 * [一些源文件位置说明](#feature3)
@@ -133,7 +133,7 @@
 ## 开始学习
 首先,讲讲的我自己的学习思路,拿到一个应用的源代码,我会先看路由,每一个路由对应着什么功能,其中有什么细节,怎么去实现,这是我最希望能学到的。在编码的时候,我个人是路由-功能去完成的,可能这是新手的方法,有大牛能指导一下能更好。所以,我从逐步从路由开始说起,一步一步的编码过程。
 
-####建议,开两个编辑器,一个用来看前面安装好的源代码,一个用来进行下面的学习
+####建议,开两个编辑器,一个用来看前面安装好的源代码,一个用来进行下面的学习,学习过程中,请随便参考官方文档,另外,我的教程里面可能不小心会有些小错误,请耐心查看,有些你已经明白了,但是实际操作出现错误无法解决的,你可以按照我下面说的循序,复制原项目的文件,也可以找我交流,谢谢!
 
 安装好laravel,配置好环境之后,我执行了
 
@@ -169,6 +169,59 @@
     protected $fillable = ['name', 'email', 'is_admin', 'password', 'sex', 'phone', 'pro_class'];
 
 什么意思,我也不是很清楚,这样写了储存user到数据库,输出user属性就不会出问题,至于具体为啥,怪我没有深入,下面继续。
+
+我们先先数据库里面填充一些数据,以方便我们下面测试.
+
+在/database/seeds下新建 UserTableSeeder.php
+
+    <?php
+
+    use Illuminate\Database\Seeder;
+    use App\User;
+    use App\Grade;
+
+    class UserTableSeeder extends Seeder {
+
+        /**
+         * Run the database seeds.
+         *
+         * @return void
+         */
+        public function run()
+        {
+            DB::table('users')->delete();
+
+            User::create([
+            'id' => 1210311232,
+            'name' => '李锐',
+            'password' => Hash::make('1210311232')
+            ]);
+
+            User::create([
+            'id' => 1210311233,
+            'name' => '陈曦',
+            'password' => Hash::make('1210311233')
+            ]);
+
+            User::create([
+            'id' => 1234567890,
+            'name' => '管理员',
+            'password' => Hash::make('root'),
+            'is_admin' => 1
+            ]);
+
+        }
+
+    }
+
+然后讲DatabaseSeeder.php中 $this->call('UserTableSeeder')前面的注释取消.
+
+执行
+
+    composer dump-autoload
+    php artisan db:seed
+
+数据就被填充到数据库里面了
 
 下面开始有任何不确定的都可以去看源代码对比
 
@@ -282,7 +335,7 @@ index方法返回的是welcome页面.
     Route::get('login', [
     'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
     Route::post('login', [
-    'middleware' => 'guest', 'loginController@loginPost']);
+    'middleware' => 'guest', 'uses' => 'loginController@loginPost']);
     Route::get('logout', [
     'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
 
@@ -326,7 +379,11 @@ auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人�
 
 也就是说只有登录了才能登出,就是这个意思。
 
-说完了中间件,来看看控制器。loginControlle.php
+说完了中间件,创建控制器。loginControlle.php
+
+    php artisan make:controller loginController --plain
+
+在里面写上以下内容:
 
     /**
      * 返回login视图,登录页面
@@ -452,3 +509,248 @@ auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人�
 
 ![Login](http://img1.ph.126.net/aBpSfUKwCB34SJXOcbz-Lg==/6630121086187793065.jpg)
 
+这时候你随便输入学号密码,页面会刷新一下,不会跳转,错误已经被存在了Session中,现在把他显示出来.
+在login.blade.php中有这样一行
+
+    @include('errors.list')
+
+我们创建errors/list.blade.php
+
+    @if (count($errors) > 0)
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+这时候要是输入不符合前面的规则,你会看到提示英文提示信息,要是输入密码或者帐号错误,你会看到 学号或者密码不正确,请重试, 这是loginPost中返回的自定义错误信息.
+
+现在,我们有两个问题需要解决,第一,英文提示信息,对我们中国用户可能不太友好,你可以更换.第二,错误提示会一直留着页面.下面,我们一一解决.
+
+关于表单验证的自定义错误信息,可以查看[官方链接](http://www.golaravel.com/laravel/docs/5.0/validation/), 现在我们找到/resources/lang/en/validation.php,在custom数组中添加:
+
+    'id' => [
+            'required' => '学号不能为空',
+            "digits"   => "学号必须是 10 位数字",
+            "unique"   => "该同学已经存在",
+        ],
+    'password' => [
+            'required' => '密码不能为空',
+        ],
+
+重新随便输入学号密码,你就可以看到中文提示信息了
+
+关于提示信息的隐藏,这里有两种简单的解决方案,参考bootstrap中的[警告框](http://v3.bootcss.com/components/#alerts-dismissible),修改/errors/list.blade.php
+
+    @if (count($errors) > 0)
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+这个时候错误信息的右边就会有一个关闭按钮,点击就可隐藏错误信息
+
+还有一种使用jQuery的一个小方法.在master.blade.php引入脚本main.cs
+
+    ...
+    <!-- script -->
+    <script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/main.js"></script>
+    ...
+
+在public文件夹下新建文件 js/main.js
+
+    $(function () {
+        $('div.alert').delay(2500).slideUp(300);
+    });
+
+这是时候再产生错误信息,就会自动隐藏了
+
+下面就是登录后的操作了,学生端的功能比较少,我们先来完成.
+
+选择一组学号密码登录,你会看到url跳转到 http://localhost:8000/stu/home, 在前面loginController中loginPost方法中可以看到关于学生成功登录后的跳转,这时候去创建我们的路由.
+
+    Route::get('stu/home', [
+        'as' => 'stu_home', 'uses' => 'Stu\StudentController@home']);
+    Route::get('stu/edit', [
+        'as' => 'stu_edit', 'uses' => 'Stu\StudentController@edit']);
+    Route::post('stu/update', [
+        'as' => 'stu_update', 'uses' => 'Stu\StudentController@update']);
+
+接着创建我们的控制器(注意路径, 在Stu下):
+
+    php artisan make:controller Stu/StudentController --plain
+
+里面包括以上三个方法,我们一个一个来解决
+
+    /**
+     * 只允许登录用户访问
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    /**
+     * 返回学生主页
+     */
+    public function home()
+    {
+        return view('stu.home');
+    }
+
+接下来去创建我们的视图文件stu/home.blade.php
+
+    @extends('master')
+
+    @section('title')
+        欢迎 -- {{ Auth::user()->name }}
+    @stop
+
+    @section('content')
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <a href="/stu/home"><button class="btn btn-info">个人信息</button></a>
+
+
+
+                    </div>
+
+                    <div class="panel-body">
+                        <div class="personal-mes">
+                            学号: {{ Auth::user()->id }}
+                            <br />
+                            姓名: {{ Auth::user()->name }}
+                            <br />
+                            性别: {{ Auth::user()->sex }}
+                            <br />
+                            手机: {{ Auth::user()->phone }}
+                            <br />
+                            班级: {{ Auth::user()->pro_class }}
+                            <br />
+                            邮箱: {{ Auth::user()->email }}
+                            <hr />
+                            <a href="/stu/edit"><button class="btn btn-primary">修改资料</button></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @stop
+
+刷新,你能看到自己的home页
+
+![stu_home](http://img1.ph.126.net/g0gBzc45Yj2cOXff6S-YsA==/6630897341397287608.jpg)
+
+接着我们完成修改资料功能,在StudentController.php中添加:
+
+    /**
+     * 返回修改资料页面
+     */
+    public function edit()
+    {
+        return view('stu.edit');
+    }
+
+创建 stu/edit.blade.php
+
+    @extends('master')
+
+    @section('title')
+        修改个人信息
+    @stop
+
+    @section('content')
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <a href="/stu/home"><button class="btn btn-info">个人信息</button></a>
+                    </div>
+
+                    @include('errors.list')
+
+                    <div class="panel-body">
+                        {!! Form::open(['url' => '/stu/update', 'class' => 'form-horizontal', 'role' => 'form']) !!}
+                            <div class="form-group">
+                                {!! Form::label('id', '学号: ', ['class' => 'col-md-2 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::text('id', Auth::user()->id, ['class' => 'form-control', 'readonly'])!!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('name', '姓名: ', ['class' => 'col-md-2 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::text('name', Auth::user()->name, ['class' => 'form-control', 'readonly'])!!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('sex', '性别: ', ['class' => 'col-md-2 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::select('sex', ['男' => '男', '女' => '女'], Auth::user()->sex, ['class' => 'form-control']) !!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('phone', '手机: ', ['class' => 'col-md-2 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::text('phone', Auth::user()->phone, ['class' => 'form-control']) !!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('pro_class', '班级: ', ['class' => 'col-md-2 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::text('pro_class', Auth::user()->pro_class, ['class' => 'form-control']) !!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('email', '邮箱: ', ['class' => 'col-md-2 control-label']) !!}
+                                <div class="col-md-6">
+                                    {!! Form::email('email', Auth::user()->email, ['class' => 'form-control']) !!}
+                                </div>
+                            </div>
+                            <div class="group">
+                                {!! Form::submit('确认修改', ['class' => 'btn btn-success form-control']) !!}
+                            </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @stop
+
+点击修改资料:
+
+![stu_edit](http://img0.ph.126.net/TK-8ZNNbnZq3UAC4Z5C2HQ==/6630777494629863627.jpg)
+
+我们可以看到表单提交到 localhost:8000/stu/update,我们的post路由update对应方法如下:
+
+    public function update(Request $request)
+    {
+        $this->validate($request, [
+            'phone' => 'required|digits:11',
+            'pro_class' => 'required',
+            'email' => 'required|email'
+            ]);
+
+        Auth::user()->update($request->all());
+
+        session()->flash('message', '个人信息修改成功');
+
+        return Redirect::route('stu_home');
+    }
