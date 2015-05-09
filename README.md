@@ -113,6 +113,7 @@
 
 数据库有3个默认用户(当然你可以在数据库里删除，自己添加，这里只是测试)
 这里的相关信息可以在 /database/seeds/UserTableSeeder.php 找到
+
 管理员:
 
     username: 1234567890
