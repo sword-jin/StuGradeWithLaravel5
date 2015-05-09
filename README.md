@@ -307,7 +307,7 @@ index方法返回的是welcome页面.
     </body>
     </html>
 
-@include('flash')先注释掉,这里暂时还不需要.
+@include('flash')先注释掉,这里暂时还不需要.(记得注释,你可以先删除,最好）
 
 创建我们的welcome.blade.php,随便修饰一下(前端不行 :) )
 
@@ -501,6 +501,15 @@ auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人�
 
     "illuminate/html": "5.0"
 
+在config/app.php中的provider数组中添加
+
+    'Illuminate\Html\HtmlServiceProvider',
+
+aliases数组中添加
+
+    'Html'      => 'Illuminate\Html\HtmlFacade',
+    'Form'      => 'Illuminate\Html\FormFacade',
+
 接着执行:
 
     composer update
@@ -652,7 +661,7 @@ auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人�
     </div>
     @stop
 
-刷新,你能看到自己的home页
+刷新,你能看到自己的home页, 留意上面的代码,有一片空白,用来后面完成查分功能
 
 ![stu_home](http://img1.ph.126.net/g0gBzc45Yj2cOXff6S-YsA==/6630897341397287608.jpg)
 
@@ -750,7 +759,150 @@ auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人�
 
         Auth::user()->update($request->all());
 
-        session()->flash('message', '个人信息修改成功');
-
         return Redirect::route('stu_home');
     }
+
+如果现在乱填表单,我们依旧可以看到错误提示,而且错误提示会自动消失,因为我们在edit.blade.php中添加了 @include('errors.list')
+
+如果填写规范,提交后返回到stu_home页.这个时候我们可以添加一个成功信息,来增强用户体验
+
+在 Auth::user()->update($request->all()) 添加:
+
+    session()->flash('message', '个人信息修改成功');
+
+接着我们去让session信息读取出来,在master.blade.php中添加
+
+    <div class="container">
+        @include('flash')
+    </div>
+
+前面有提到,相信你知道放在哪儿比较合适.接着创建我们的flash.blade.php
+
+    @if (Session::has('message'))
+        <div class="alert alert-success">
+            {{ session('message') }}
+        </div>
+    @endif
+
+再次修改资料，成功后会看到提示信息,而且信息也会自动隐藏.
+
+### 做了这么多,我还是提醒大家,随时随地查阅官方文档,或者对比我的代码,以免留下隐患
+
+最后,我们来完成学生端的查分功能,首先,我们知道,users表里面是没有成绩字段的,所以我们这个时候需要建立第二个模型,Grade模型. let's do that
+
+    php artisan make:model Grade
+
+找到Grade.php,添加:
+
+    protected $table = 'grades';
+
+    protected $fillable = [
+        'math',     #高数
+        'english',  #英语
+        'c',        #c语言
+        'sport',    #体育
+        'think',    #思修
+        'soft',     #软件工程
+    ];
+
+    protected static function rules(){
+        return [
+            'math' => 'digits_between:0,2',
+            'english' => 'digits_between:0,2',
+            'c' => 'digits_between:01,2',
+            'sport' => 'digits_between:1,2',
+            'think' => 'digits_between:1,2',
+            'soft' => 'digits_between:1,2',
+            ];
+    }
+
+有了前面User模型的基础,相信不难理解以上代码.接着在 /database/migrations/ 下找到 .._create_grades_table.php,修改文件:
+
+    public function up()
+    {
+        Schema::create('grades', function(Blueprint $table)
+        {
+            $table->increments('id');
+            $table->integer('user_id')->unsigned()->unique()->index();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->integer('math')->nullable();
+            $table->integer('english')->nullable();
+            $table->integer('c')->nullable();
+            $table->integer('sport')->nullable();
+            $table->integer('think')->nullable();
+            $table->integer('soft')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::drop('grades');
+    }
+
+这里有一点要说的,关于外键,我很多时候创建外键都不是一次成功的,我感觉我每次在这里都会出点问题,所以,大家要是创建成功,一定要有耐心,后面在phpMyAdmin里查看数据表会有惊喜,留给你去发现(我就不多说了),总之,这里不能跳过,对照源码,查阅资料,花点时间.
+
+因为我们现在还没有完成后台的模块,所以不能进入后台上传分数,这里我们选择在seed里面填充数据
+,打开UserTableSeeder.php,偷个懒,就不再创建一个seeder了,加入:
+
+    Grade::create([
+        'user_id' => 1210311232,
+        'math'    => 99,
+        'english'    => 80,
+        'c'    => 96,
+        'sport'    => 95,
+        'think'    => 99,
+        'soft'    => 98,
+        ]);
+
+    Grade::create([
+        'user_id' => 1210311233,
+        ]);
+
+因为成绩是能为空的,所以像下面那样创建也是可以的,接着运行:
+
+    php artisan db:seed
+
+这里我们需要在User.php里面建立和Grade一对一的模型关系,官方文档链接,[link](http://www.golaravel.com/laravel/docs/5.0/eloquent/),想要更深入的理解Laravel Eloquent,请参考[岁寒](http://lvwenhan.com/laravel/421.html)的三篇关于Eloquent的博文.
+
+在User.php中添加:
+
+    public function grade()
+    {
+        return $this->hasOne('App\Grade');
+    }
+
+接着在试图里面去得到成绩,在前面所说的那个完成查询成绩的地方加上:
+
+    @include('stu.grade')
+
+接着创建stu/grade.blade.php:
+
+    <button type="button" class="btn btn-warning"
+    data-container="body" data-toggle="popover" data-placement="bottom"
+    title="{{ Auth::user()->name }}--成绩"
+    data-content="
+        ************** 高数 -- {{ $grade->math }} **************
+        ************** 英语 -- {{ $grade->english }} **************
+        ************ C语言 -- {{ $grade->c }} **************
+        ************** 体育 -- {{ $grade->sport }} **************
+        ************** 思修 -- {{ $grade->think }} **************
+        ************** 软件 -- {{ $grade->soft }} **************
+    ">
+        点击,查看成绩
+    </button>
+
+那么,这个$grade从何而来,我们回到StudentController,修改home方法:
+
+    $grade = Auth::user()->grade;
+
+    return view('stu.home', compact('grade'));
+
+接着刷新我们的浏览器,点击查询分数,可以看到
+
+![stu_grade](http://img2.ph.126.net/T5k2e3oyqe20EIQikiUFag==/6630778594141491905.jpg)
