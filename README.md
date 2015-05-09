@@ -234,9 +234,9 @@ index方法返回的是welcome页面.
             </div>
         </nav>
 
-        <div class="container">
+        <!-- <div class="container">
             @include('flash')
-        </div>
+        </div> -->
 
         @yield('content')
 
@@ -244,3 +244,7 @@ index方法返回的是welcome页面.
     <script type="text/javascript" src="/js/all.js"></script>
     </body>
     </html>
+
+@include('flash')先注释掉，这里暂时还不需要.
+
+![Index](http://photo.163.com/qq215672398/#m=2&aid=293258280&pid=9291625492)
