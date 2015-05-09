@@ -14,7 +14,7 @@
 
                     @include('errors.list')
 
-                    {!! Form::open(['url' => '/stu/login', 'class' => 'form-horizontal', 'role' => 'form']) !!}
+                    {!! Form::open(['url' => '/login', 'class' => 'form-horizontal', 'role' => 'form']) !!}
                         <div class="form-group">
                             {!! Form::label('id', '学号', ['class' => 'col-md-4 control-label']) !!}
                             <div class="col-md-6">

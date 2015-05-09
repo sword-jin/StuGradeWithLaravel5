@@ -247,4 +247,34 @@ index方法返回的是welcome页面.
 
 @include('flash')先注释掉，这里暂时还不需要.
 
+创建我们的welcome.blade.php,随便修饰一下(前端不行 :) )
+
+    @extends('master')   {{-- 继承master模版 --}}
+
+    @section('title')   {{-- 对应@yield('title') --}}
+        学生成绩管理系统
+    @stop
+
+    @section('content')   {{-- 对应@yield('content') --}}
+        <div class="container">
+            <div class="jumbotron">
+                <h2><div class="quote">{{ Inspiring::quote() }}</div></h2>
+                <p>同学们登录后先修改相关资料</p>
+                <p>查询分数，有疑问咨询管理员</p>
+                <p><a class="btn btn-primary btn-lg" href="/login" role="button">点击登录</a></p>
+            </div>
+        </div>
+    @stop
+
 ![Index](http://img1.ph.126.net/HmhY3w2qYDWr4RyQKdcfiQ==/6630430048955199565.jpg)
+
+好了，首页已经完成了，来看这三个路由
+
+    Route::get('login', [
+    'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
+    Route::post('login', 'loginController@loginPost');
+    Route::get('logout', [
+    'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
+
+
+

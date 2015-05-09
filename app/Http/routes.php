@@ -20,7 +20,7 @@ Route::get('/', 'WelcomeController@index');
 ####################################################
 Route::get('login', [
     'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
-Route::post('stu/login', 'loginController@loginPost');
+Route::post('login', 'loginController@loginPost');
 Route::get('logout', [
     'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
 
