@@ -14,7 +14,7 @@
 ## 功能
 * 学生端
     * 登录完善修改个人信息,查看成绩
-    * 修改密码,验证邮件(待完善)
+    * 修改密码,验证邮件(待完善) OK
 * 管理员
     * 登录能查看所有学生信息,包括新增学生,删除学生
     * 能更新学生成绩,没有修改学生信息的权限
@@ -1661,3 +1661,222 @@ $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
 所以我写了两个得到想要输出的数据功能函数,这里对照官方文档看一下,没什么好解释的,然后刷新浏览器,你就可以下载名单和导出成绩了.
 
 最后,真心谢谢能看到这样的小伙伴!
+-----
+
+### 修改密码功能
+
+laravel5中给我们提供了简单使用的修改密码功能,官方文档,[link](http://www.golaravel.com/laravel/docs/5.0/authentication/).
+
+由于我们之前执行了  php artisan fresh, 所以laravel5自带的一些模块被我们删除了,别急，还是先新建我们的路由,在routes.php中添加:
+
+    Route::controller('password', 'PasswordController');
+
+执行:
+
+    php artisan make:controller PasswordController --plain
+
+修改PasswordController.php:
+
+    <?php namespace App\Http\Controllers;
+
+    use App\Http\Controllers\Controller;
+    use Illuminate\Contracts\Auth\Guard;
+    use Illuminate\Contracts\Auth\PasswordBroker;
+    use Illuminate\Foundation\Auth\ResetsPasswords;
+
+    class PasswordController extends Controller {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Password Reset Controller
+        |--------------------------------------------------------------------------
+        |
+        | This controller is responsible for handling password reset requests
+        | and uses a simple trait to include this behavior. You're free to
+        | explore this trait and override any methods you wish to tweak.
+        |
+        */
+
+        use ResetsPasswords;
+
+        /**
+         * Create a new password controller instance.
+         *
+         * @param  \Illuminate\Contracts\Auth\Guard  $auth
+         * @param  \Illuminate\Contracts\Auth\PasswordBroker  $passwords
+         * @return void
+         */
+        public function __construct(Guard $auth, PasswordBroker $passwords)
+        {
+            $this->auth = $auth;
+            $this->passwords = $passwords;
+            $this->subject = '学生成绩系统用户密码修改';
+            $this->redirectTo = '/';
+            $this->middleware('guest');
+        }
+
+    }
+
+这些是laravel5自带的,我只是直接借用过来
+
+这时候修改我们的login.blade.php:
+
+    ...
+    {!! Form::submit('Login', ['class' => 'btn btn-primary']) !!}
+    <a class="btn btn-link" href="{{ url('/password/email') }}">忘记密码？</a>
+    ...
+
+我们到登录页,点击忘记密码,游览器会提示我们 view(auth.password) 找不到,我们去新建视图文件auth/password.blade.php:
+
+    @extends('master')
+
+    @section('title')
+        修改密码
+    @stop
+
+    @section('content')
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading">密码找回</div>
+                    <div class="panel-body">
+                        @if (session('status'))
+                            <div class="alert alert-success">
+                                {{ session('status') }}
+                            </div>
+                        @endif
+
+                        @include('errors.list')
+
+                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/email') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+
+                            <div class="form-group">
+                                <label class="col-md-4 control-label">E-Mail Address</label>
+                                <div class="col-md-6">
+                                    <input type="email" class="form-control" name="email" value="{{ old('email') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6 col-md-offset-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        发送邮件
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @stop
+
+这时候来配置我们的一些文件,打开config/mail.php:
+
+    'host' => 'smtp.126.com',     //这里126换成163也可以,qq没试过
+
+    'port' => 25,
+
+    'from' => ['address' => '邮箱帐号', 'name' => '学生成绩系统'],
+
+    'username' => '邮箱帐号',
+
+    'password' => '邮箱密码',
+
+接着,新建我们的修改密码数据库表
+
+    php artisan make:migration create_password_resets_table
+
+修改 ..create_password_resets_table.php:
+
+    public function up()
+    {
+        Schema::create('password_resets', function(Blueprint $table)
+        {
+            $table->string('email')->index();
+            $table->string('token')->index();
+            $table->timestamp('created_at');
+        });
+    }
+
+    public function down()
+    {
+        Schema::drop('password_resets');
+    }
+
+执行:
+
+    php artisan migrate
+
+这时候刷新浏览器,填写一个存在的邮箱后(前提是你登录进去修改过的邮箱),这里需要使用自己的邮箱方便测试,点击发送,马上你就可以收到邮件了.
+
+点击邮件中的链接,浏览器会提示里找不到view(auth.reset),新建reset.blade.php
+
+    @extends('master')
+
+    @section('title')
+        修改密码
+    @stop
+
+    @section('content')
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Reset Password</div>
+                    <div class="panel-body">
+
+                        @include('errors.list')
+
+                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="token" value="{{ $token }}">
+
+                            <div class="form-group">
+                                <label class="col-md-4 control-label">E-Mail </label>
+                                <div class="col-md-6">
+                                    <input type="email" class="form-control" name="email" value="{{ old('email') }}">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-md-4 control-label">Password</label>
+                                <div class="col-md-6">
+                                    <input type="password" class="form-control" name="password">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-md-4 control-label">Confirm Password</label>
+                                <div class="col-md-6">
+                                    <input type="password" class="form-control" name="password_confirmation">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6 col-md-offset-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        Reset Password
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @stop
+
+接着你就可以测试密码修改了,这个功能也就完成了.
+
+拓展
+
+    * 你可以在 /resources/lang/en/passwords.php下查看修改密码的一些提示信息,你也可以按照自己的想法去修改他们
+
+    * 你可以在 /vendor/laravel/framework/src/Illuminate/Foundation/Auth/ResetPasswords.php 看到修改密码功能实现的各个细节,你可以去解读,修改成自己想要的功能
