@@ -3,3 +3,9 @@
         {{ session('message') }}
     </div>
 @endif
+
+@if (Session::has('message_warning'))
+    <div class="alert alert-warning">
+        {{ session('message_warning') }}
+    </div>
+@endif

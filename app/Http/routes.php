@@ -41,6 +41,7 @@ Route::post('stu/update', [
 #查看成绩排名
 Route::get('admin/grade', [
     'as' => 'grade_list', 'uses' => 'Admin\GradeController@index']);
+#资源路由,学生的增删改查
 Route::resource('admin', 'Admin\AdminController');
 #上传分数
 Route::post('admin/upload_grade', [

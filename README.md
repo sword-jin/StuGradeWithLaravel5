@@ -77,12 +77,17 @@
 <a name="step3"></a>
 ### 3: 修改配置文件
 
-在.env文件中修改
+将.env.example重命名为.env文件中并且修改
 
     DB_HOST=localhost
     DB_DATABASE=dbname
     DB_USERNAME=username
     DB_PASSWORD=password
+
+在config/app.php 下修改:
+
+    'url' => 'http://localhost/项目文件夹名/public',
+    'timezone' => 'PRC',
 
 -----
 <a name="step4"></a>
@@ -135,7 +140,7 @@
 
 ####建议,开两个编辑器,一个用来看前面安装好的源代码,一个用来进行下面的学习,学习过程中,请随便参考官方文档,另外,我的教程里面可能不小心会有些小错误,请耐心查看,有些你已经明白了,但是实际操作出现错误无法解决的,你可以按照我下面说的循序,复制原项目的文件,也可以找我交流,谢谢!
 
-安装好laravel,配置好环境之后,我执行了
+安装好laravel,[配置](#step3)好环境之后,我执行了
 
     php artisan fresh
 
@@ -330,6 +335,7 @@ index方法返回的是welcome页面.
 
 ![Index](http://img1.ph.126.net/HmhY3w2qYDWr4RyQKdcfiQ==/6630430048955199565.jpg)
 
+<a name="route1"></a>
 好了,首页已经完成了,来看这三个路由
 
     Route::get('login', [
@@ -339,6 +345,7 @@ index方法返回的是welcome页面.
     Route::get('logout', [
     'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
 
+-----
 完成登录登出的功能, 在路由中设置中间件, 过滤一些非法请求,关于中间件,参考[官方文档](www.golaravel.com/laravel/docs/5.0/middleware/)
 
 guest 只允许游客(没登陆的情况下)访问get路由login和post路由login,要是已经登录,就会跳转到相应页面,注意关键词响应。我们登录用户有两种,学生,和管理员,当他们在登录的情况下要想访问这两个路由,肯定会做出不同的响应。即,学生,跳转到学生主页,管理员,跳转到管理员主页.现在来看看RedirectIfAuthenticated.php
@@ -909,4 +916,70 @@ aliases数组中添加
 
 ####下面,我们开始后台的模块
 
+还是老样子,我们先退出当先登录用户,回到登录页面,登录管理员帐号
 
+    1234567890
+    root
+
+看看我们的url跳转到 http://localhost:8000/admin
+
+接着来添加我们的后台路由:
+
+    #查看成绩排名
+    Route::get('admin/grade', [
+        'as' => 'grade_list', 'uses' => 'Admin\GradeController@index']);
+    #资源控制器,学生的增删改查
+    Route::resource('admin', 'Admin\AdminController');
+    #上传分数
+    Route::post('admin/upload_grade', [
+        'as' => 'upload_grade', 'uses' => 'Admin\AdminController@upload_grade']);
+
+首先来看看我们的资源控制器, [官方文档](http://www.golaravel.com/laravel/docs/5.0/controllers/), 运行(注意路径):
+
+    php artisan make:controller Admin/AdminController
+
+我们当前的url对应着index方法,进入AdminController.php:
+
+    public function __construct()
+    {
+        $this->middleware('admin');
+    }
+
+这是什么意思？先查看Kernel.php,我们向 $routeMiddleware 数组里面添加:
+
+    'admin' => 'App\Http\Middleware\isAdmin'
+
+代表注册中间件 admin,接着运行如下命令新建isAdmin.php:
+
+    php artisan make:middleware isAdmin
+
+进入到isAdmin.php:
+
+    public function handle($request, Closure $next)
+    {
+        if (!Auth::check()) {
+            return Redirect::route('login');
+        } else {
+            if (!Auth::user()->is_admin) {
+                session()->flash('message_warning', '您不是管理员！无法进入相关区域');
+                return Redirect::route('stu_home');
+            }
+        }
+        return $next($request);
+    }
+
+过滤没有登录的用户,重定向到登录页,过滤普通登录用户,重定向到学生登录首页,而且，返回一条警告信息,提示那是管理员区域.打开我们的flash.blade.php,增加:
+
+    @if (Session::has('message_warning'))
+        <div class="alert alert-warning">
+            {{ session('message_warning') }}
+        </div>
+    @endif
+
+现在来测试我们的中间件工作如何
+
+* 在url中输入http://localhost:8000/login,会发现无法跳转,现在你可以回过头看看之前路由中添加的中间件, [点击跳转](#route1)
+
+* 在url中输入http://localhost:8000/logout,退出登录回到登录页
+
+* 输入一组学生帐号,然后在url中输入http://localhost:8000/admin,你会看到页面刷新,并且弹出警告信息.
