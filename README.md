@@ -1877,6 +1877,6 @@ laravel5中给我们提供了简单使用的修改密码功能,官方文档,[lin
 
 拓展
 
-    * 你可以在 /resources/lang/en/passwords.php下查看修改密码的一些提示信息,你也可以按照自己的想法去修改他们
+* 你可以在 /resources/lang/en/passwords.php下查看修改密码的一些提示信息,你也可以按照自己的想法去修改他们
 
-    * 你可以在 /vendor/laravel/framework/src/Illuminate/Foundation/Auth/ResetPasswords.php 看到修改密码功能实现的各个细节,你可以去解读,修改成自己想要的功能
+* 你可以在 /vendor/laravel/framework/src/Illuminate/Foundation/Auth/ResetPasswords.php 看到修改密码功能实现的各个细节,你可以去解读,修改成自己想要的功能
