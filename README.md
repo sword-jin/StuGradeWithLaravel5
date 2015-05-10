@@ -1099,3 +1099,59 @@ $count,是学生数量,先传入,后面要使用,$users,这里我不知道怎么
 
 ![Index](http://img2.ph.126.net/ht_p4ve2bjdgztWscVeKjg==/6619130367956856221.jpg)
 
+<?php echo $users->render(); ?>  输出分页列表,现在我们只有两组数据,所以暂时看不到,待会完成添加学生的功能之后再来测试这个效果.我们先做删除功能,可以看到删除按钮提交到
+http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐藏输入域,告诉路由,这个请求对应这资源控制器的 destory 方法,我们来完成
+
+    public function destroy(User $user)
+    {
+        $name = $user->name;
+        $user->delete();
+        session()->flash('message', $name."同学已经被移除");
+        return Redirect::back();
+    }
+
+看到参数 User $user, 为什么不是id,你一定会这样想.我们打开 App/Http/Provider/RouteServiceProvider.php,修改boot方法,这里我们可以查阅官方文档,[路由模型绑定](http://www.golaravel.com/laravel/docs/5.0/routing/)
+
+    public function boot(Router $router)
+    {
+        parent::boot($router);
+
+        $router->bind('admin', function($id){
+            return \App\User::findOrFail($id);
+        });
+
+        //$router->model('admin', 'App/User');
+    }
+
+上面两种写法都行,看个人喜好.上面写法比较直观,相信你现在也知道了destory方法参数为什么可以那样写了,你可以在destory中dd($user);在浏览器中点击删除,确定删除,就可以看到页面中输出对应的user信息,下面,去掉destory中dd($user),刷新,可以看到对应同学消失,并且出现提示信息,还是贴个图片,我觉得这样能反馈一些信息.
+
+![Delete](http://img2.ph.126.net/eC6f0VCiWj85AnBCZh_U_g==/3355744672446850589.jpg)
+
+可能看到上面图片中的右侧栏吧,我们先把它完成,然后一一实现它的功能.将index视图文件中的read2替换成:
+
+    @include('Admin.right_bar')
+
+接着新建Admin/right_bar.blade.php:
+
+    <div class="col-md-2">
+        <h3>总人数: {{ $count }}</h3>
+        <a href="/admin"><button class="btn btn-success btn-lg">学生列表</button></a>
+        <br /><br />
+        <a href="/admin/create"><button class="btn btn-primary btn-lg">添加学生</button></a>
+        <br /><br />
+        <a href="/admin/grade"><button class="btn btn-info btn-lg">成绩排名</button></a>
+        <br /><br />
+        <a href="{{ URL::route('download_stu_list_excel') }}"><button class="btn btn-default btn-lg">下载名单</button></a>
+        <br /><br />
+        <a href="{{ URL::route('download_grade_list_excel') }}"><button class="btn btn-lg btn-default">导出成绩</button></a>
+    </div>
+
+学生列表 -- 返回学生列表,即 http://localhost:8000/admin
+
+添加学生 -- 添加学生页面,即 http://localhost:8000/admin/create
+
+成绩排名 -- 查看成绩列表,即 http://localhost:8000/admin/grade
+
+下载名单 -- 下载学生信息Excel
+
+导出成绩 -- 下载学生成绩Excel
