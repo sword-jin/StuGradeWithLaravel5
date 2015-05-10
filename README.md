@@ -1155,3 +1155,83 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 下载名单 -- 下载学生信息Excel
 
 导出成绩 -- 下载学生成绩Excel
+
+添加学生,对应AdminController中的create方法:
+
+    public function create(){
+        $result = User::where('is_admin', 0);
+        $count = $result->count();
+        return view('Admin.create', compact('count'));
+    }
+
+接着去创建Admin/create.blade.php:
+
+    @extends('master')
+
+    @section('title')
+        添加学生
+    @stop
+
+    @section('content')
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10">
+                    <h2>添加学生</h2>
+                    <hr />
+
+                    @include('errors.list')
+
+                    <div class="form-group">
+                        {!! Form::model($user = new \App\User, ['url' => 'admin/', 'class' => 'form-horizontal']) !!}
+                            <div class="form-group">
+                                {!! Form::label('id', '学号: ', ['class' => 'control-label col-md-1']) !!}
+                                <div class="col-md-4">
+                                    {!! Form::text('id', old('id'), ['class' => 'form-control']) !!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('name', '姓名: ', ['class' => 'control-label col-md-1']) !!}
+                                <div class="col-md-4">
+                                    {!! Form::text('name', old('name'), ['class' => 'form-control', 'required']) !!}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    {!! Form::submit('完成,创建', ['class' => 'btn btn-success form-control']) !!}
+                                </div>
+                            </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+                @include('Admin.right_bar')
+            </div>
+        </div>
+    @stop
+
+点击添加学生:
+
+![create](http://img2.ph.126.net/X-coZOxhAC6V5qYOaQTPGg==/6599300675750906321.jpg)
+
+这里我们Form::model(obj, [options]),传入一个新的对象$user, 这里可以查看 /vendor/illuminate/html/FormBuilder.php中的model方法,Form自动帮你填好表单,这里因为是新建,表单为空,后面你就明白了. 接着看我们的url地址, http://localhost:8000/admin,对应控制器中的store方法,
+
+    public function store(Request $request)
+    {
+        $this->validate($request, [
+            'id' => 'required|digits:10|unique:users',
+            ]);
+        $user = new User;
+        $user->id = $request->id;
+        $user->name = $request->name;
+        $user->password = Hash::make($user->id);
+        $user->save();
+        session()->flash('message', $user->name."同学添加成功");
+        DB::insert('insert into grades (user_id, math, english, c, sport, think,soft)
+            values (?,?,?,?,?,?,?)', [$request->id,null,null,null,null,null,null]);
+        return Redirect::to('admin');
+    }
+
+我解释一下,这里,也就是我的思路,管理员只能添加学生初始化它的学号,姓名,密码(默认为学号),同时在grades表中添加对应的一条记录,至于写法为什么这么不优雅！因为我尝试其他的都不行,你有兴趣可以试试,有好的方法也可以提交给我,创建成功后返回admin并提示信息.
+
+现在我们开始添加学生吧,超过10条就可以了,以便于我们后面的效果测试
+
+![list](http://img1.ph.126.net/_L4uIqT4-nyfjOqYMWPg5Q==/1166432303506973500.jpg)
