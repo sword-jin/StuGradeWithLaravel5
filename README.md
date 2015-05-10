@@ -135,7 +135,7 @@
 -----
 
 <a name="feature6"></a>
-## 开始学习
+## 开始学习(至少要阅读过一遍官方文档,熟悉基本用法)
 首先,讲讲的我自己的学习思路,拿到一个应用的源代码,我会先看路由,每一个路由对应着什么功能,其中有什么细节,怎么去实现,这是我最希望能学到的。在编码的时候,我个人是路由-功能去完成的,可能这是新手的方法,有大牛能指导一下能更好。所以,我从逐步从路由开始说起,一步一步的编码过程。
 
 ####建议,开两个编辑器,一个用来看前面安装好的源代码,一个用来进行下面的学习,学习过程中,请随便参考官方文档,另外,我的教程里面可能不小心会有些小错误,请耐心查看,有些你已经明白了,但是实际操作出现错误无法解决的,你可以按照我下面说的循序,复制原项目的文件,也可以找我交流,谢谢!
@@ -799,7 +799,7 @@ aliases数组中添加
         ];
     }
 
-然后修改update方法:
+然后修改update方法(别忘了在类外引入StudentMesRequest, 即use App\Http\Requests\StudentMesRequest;):
 
     public function update(StudentMesRequest $request)
     {
@@ -1025,4 +1025,77 @@ aliases数组中添加
 
 ![warning](http://img0.ph.126.net/r-Y8HYxnc9GaoJYbNjp8mA==/2777313595222015641.jpg)
 
-下面,继续
+下面,继续查看AdminController中的index方法:
+
+    public function index()
+    {
+        $result = User::where('is_admin', 0);
+        $count = $result->count();
+        $users = $result->paginate(10);
+        return view('Admin.index', compact('users', 'count'));
+    }
+
+$count,是学生数量,先传入,后面要使用,$users,这里我不知道怎么说,就是可以实现分页功能,参考官方文档,[Link](http://www.golaravel.com/laravel/docs/5.0/pagination/),代表我后面的视图文件中需要分页,每页显示10个user信息.接下来新建我们的视图文件 Admin/index.blade.php
+
+    @extends('master')
+
+    @section('title')
+        管理员
+    @stop
+
+    @section('content')
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10">
+
+                    @include('errors.list')
+
+                    <h3 align="center">学生信息表</h3>
+                    <table class="table table-hover">
+                        <tr>
+                            <td>学号</td>
+                            <td>姓名</td>
+                            <td>性别</td>
+                            <td>手机</td>
+                            <td>班级</td>
+                            <td>邮箱</td>
+                            <td>操作</td>
+                        </tr>
+                        @if (count($users))
+                            @foreach ($users as $user)
+                                <tr>
+                                    <td>{{ $user->id }}</td>
+                                    <td>{{ $user->name }}</td>
+                                    <td>{{ $user->sex }}</td>
+                                    <td>{{ $user->phone }}</td>
+                                    <td>{{ $user->pro_class }}</td>
+                                    <td>{{ $user->email }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#myModal{{$user->id}}">更新分数</button>
+                                        <form action="{{ url('admin/'.$user->id) }}" style='display: inline' method="post">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <input type="hidden" name="_token" value="{{csrf_token()}}">
+                                            <button class="btn btn-sm btn-danger" onclick="return confirm('确定删除?')">删除</button>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                                read1
+
+                            @endforeach
+                        @else
+                            <h1>没有学生名单,请管理员添加</h1>
+                        @endif
+                    </table>
+                    <?php echo $users->render(); ?>
+                </div>
+                read2
+            </div>
+
+        </div>
+    @stop
+
+注意两个 read 区域,后面用来填充其他功能,这个时候登录管理员帐号密码,你应该能看到下面的效果
+
+![Index](http://img2.ph.126.net/ht_p4ve2bjdgztWscVeKjg==/6619130367956856221.jpg)
+

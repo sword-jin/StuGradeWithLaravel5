@@ -45,7 +45,7 @@
 
                         @endforeach
                     @else
-
+                        <h1>没有学生名单,请管理员添加</h1>
                     @endif
                 </table>
                 <?php echo $users->render(); ?>
