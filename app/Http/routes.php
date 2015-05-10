@@ -16,7 +16,7 @@ Route::get('users', 'TestController@users');
 Route::get('/', 'WelcomeController@index');
 
 ####################################################
-#登录，登出, 自动跳转
+#登录，登出, 自动跳转, 密码重置
 ####################################################
 Route::get('login', [
     'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
@@ -24,7 +24,7 @@ Route::post('login', [
     'middleware' => 'guest', 'uses' => 'loginController@loginPost']);
 Route::get('logout', [
     'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
-
+Route::controller('password', 'PasswordController');
 ####################################################
 #学生的登录详情(包括资料修改，分数查询)
 ####################################################
