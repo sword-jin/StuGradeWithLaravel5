@@ -52,6 +52,6 @@ Route::post('admin/upload_grade', [
 ####################################################
 #下载学生名单
 Route::get('download/stuList', [
-    'as' => 'download_stu_list_excel', 'uses' => 'ExcelController@stuList']);
+    'as' => 'download_stu_list_excel', 'uses' => 'Admin\ExcelController@stuList']);
 Route::get('download/grade', [
-    'as' => 'download_grade_list_excel', 'uses' => 'ExcelController@grade']);
+    'as' => 'download_grade_list_excel', 'uses' => 'Admin\ExcelController@grade']);
