@@ -91,7 +91,7 @@
 
 -----
 <a name="step4"></a>
-### 4: 安装gulp和Elixir
+### 4: 安装gulp和Elixir (安装阶段可以跳过)
 
 执行以下命令:
 
