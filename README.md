@@ -138,7 +138,17 @@
 ## 开始学习(至少要阅读过一遍官方文档,熟悉基本用法)
 首先,讲讲的我自己的学习思路,拿到一个应用的源代码,我会先看路由,每一个路由对应着什么功能,其中有什么细节,怎么去实现,这是我最希望能学到的。在编码的时候,我个人是路由-功能去完成的,可能这是新手的方法,有大牛能指导一下能更好。所以,我从逐步从路由开始说起,一步一步的编码过程。
 
-####建议,开两个编辑器,一个用来看前面安装好的源代码,一个用来进行下面的学习,学习过程中,请随便参考官方文档,另外,我的教程里面可能不小心会有些小错误,请耐心查看,有些你已经明白了,但是实际操作出现错误无法解决的,你可以按照我下面说的循序,复制原项目的文件,也可以找我交流,谢谢!
+### 你可能会遇到的问题
+* Class App\Http\Controllers\Admin\ExcelController does not exist
+* Class 'App\Http\Controllers\Admin\User' not found
+* 类似的问题
+### 你需要:
+* 检查文件名,看是否一致
+* 检查命名空间
+* 检查类名
+* 检查是否在类外 use User 或者 use Auth 等等
+
+#### 建议,开两个编辑器,一个用来看前面安装好的源代码,一个用来进行下面的学习,学习过程中,请随便参考官方文档,另外,我的教程里面可能不小心会有些小错误,请耐心查看,有些你已经明白了,但是实际操作出现错误无法解决的,你可以按照我下面说的循序,复制原项目的文件,也可以找我交流,谢谢!
 
 安装好laravel,[配置](#step3)好环境之后,我执行了
 
@@ -949,6 +959,12 @@ aliases数组中添加
 
     return view('stu.home', compact('grade'));
 
+然后需要在我们的main.js里面添加这样一行:
+
+    $('[data-toggle="popover"]').popover();
+
+这里可以参考bootstrap文档,[弹出框](http://v3.bootcss.com/javascript/#popovers)
+
 接着刷新我们的浏览器,点击查询分数,可以看到
 
 ![stu_grade](http://img2.ph.126.net/T5k2e3oyqe20EIQikiUFag==/6630778594141491905.jpg)
@@ -1376,7 +1392,7 @@ $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
                         </thead>
 
                         @foreach ($users as $user)
-                            <tr class="myGrade">
+                            <tr>
                                 <td>{{$user->id}}</td>
                                 <td>{{$user->name}}</td>
                                 <td>{{$user->grade->math}}</td>
@@ -1400,3 +1416,247 @@ $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
 
 ![grade1](http://img0.ph.126.net/J3hykK_OSTliVhw94Gxt-A==/6630546597187744827.jpg)
 
+那么,问题来了,首先,分数太多,不能突出重点(我认为是不及格的分数),第二不能将科目分数进行排序,我们来一个一个解决.
+
+分数的问题,我觉得讲不及格分数显示为红色比较好,js有点基础的同学应该很中意就办到了.
+
+我们先给tr设置一个class属性
+
+    ...
+    @foreach ($users as $user)
+        <tr class="myGrade">
+    ...
+
+打开我们的main.js,添加:
+
+    $('.myGrade').each(function(){
+        $(this).children().each(function(){
+            if ($(this).html() < 60){
+                $(this).addClass("notPass");
+            }
+        });
+    });
+
+然后新建一个mian.css文件,放在public/css目录下
+
+    .notPass{
+        color: red;
+    }
+
+这个时候你再次刷新浏览器,你可以看到这样的效果了(有点夸张,大学挂科人数不多的)
+
+![grade2](http://img1.ph.126.net/WWHqs3szjNCoQbLZidegxA==/6630875351164737127.jpg)
+
+接着完成表单的排序,官网打开速度很慢,可自行百度下载,或者去项目源文件找到 /resource/js/jquery.tablesorter.min.js ,拷贝到public/js/目录下, 在master.blade.php下引入
+
+    <script type="text/javascript" src="/js/jquery.tablesorter.min.js"></script>
+
+然后在main.js里面添加这样一行:
+
+    $("#sortTable").tablesorter();
+
+回到list视图文件,给table添加一个id 为 sortTable
+
+刷新浏览器,你就能点击表头进行排序了.更多用法你也可以去参考官方文档
+
+现在我们可以使用前端自动化工具来处理我们的css和js脚本文件了
+
+安装node,安装gulp,在根目录下执行:
+
+    npm install
+
+如果你实在安装不成功,可以去googel各种安装方法,或者跳过此节,这样只讲述了基础用法,
+我们接着继续resources目录下创建css和js文件夹,接着将以下文件复制到:
+
+    js/
+      bootstrap.min.js
+      jquery.min.js
+      jquery.tablesorter.min.js
+      main.js
+
+    css/
+      bootstrap.min.js
+      main.js
+
+然后打开gulpfile.js,修改:
+
+    var elixir = require('laravel-elixir');
+
+    elixir(function(mix) {
+        mix.styles([
+            "bootstrap.min.css",
+            "main.css"
+            ]);
+
+        mix.scripts([
+            "jquery.min.js",
+            "bootstrap.min.js",
+            "jquery.tablesorter.min.js",
+            "main.js"
+            ]);
+    });
+
+接着执行:
+
+    gulp
+
+你就可以找到 public/css/all.css 和 public/js/all.js文件了
+
+接着你可以删除master.blade.php里所有引入的css和js脚本,现在只需要引入两个文件:
+
+    <link rel="stylesheet" type="text/css" href="{{ asset('/css/all.css') }}">
+
+    <script type="text/javascript" src="/js/all.js"></script>
+
+刷新浏览器,查看各个功能,正常使用(确保public文件夹下引入bootstrap的fonts文件)
+
+最后,我们完成名单表和成绩表的导出功能,这里我们使用laravel Excel
+
+在composer.json require中加入:
+
+    "maatwebsite/excel": "~2.0.0"
+
+执行:
+
+    composer update
+
+安装成功后在config/app.php中加入
+
+    'Maatwebsite\Excel\ExcelServiceProvider',
+
+    'Excel'     => 'Maatwebsite\Excel\Facades\Excel',
+
+然后我们先测试一下是否能成功运行,参考官方文档,[Laravel Excel](http://www.maatwebsite.nl/laravel-excel/docs/export),测试各种功能
+
+这里我只是演示一下,新建一个TestController,在route.php中添加
+
+    Route::get('/test', 'TestController@index');
+
+在TestController的index方法中添加:
+
+    Excel::create('测试', function($excel) {
+
+    $excel->sheet('Sheetname', function($sheet) {
+
+        $sheet->fromArray(array(
+            array('data1', 'data2'),
+            array('data3', 'data4')
+        ));
+
+    });
+
+    })->export('xls');
+
+然后你可以修改right_bar.blade.php中一个超链接地址为 href="/test",接着点击,你会发现浏览器提示下载文件   测试.xls,就是这么简单.
+
+最后我们来完成名单成绩的下载,添加路由:
+
+    Route::get('download/stuList', [
+    'as' => 'download_stu_list_excel', 'uses' => 'Admin\ExcelController@stuList']);
+
+    Route::get('download/grade', [
+    'as' => 'download_grade_list_excel', 'uses' => 'Admin\ExcelController@grade']);
+
+执行:
+
+    php artisan make:controller Admin/EcxelController --plain
+
+    /**
+     * 得到学生名单，下载excel文档
+     */
+    public function stuList()
+    {
+        $users = $this->getUsersDatas();
+
+        Excel::create('学生信息表', function($excel) use($users) {
+
+            $excel->sheet('sheetName', function($sheet) use($users) {
+
+                    $sheet->fromArray($users, null, 'A1', false, false);
+
+                    $sheet->prependRow(1, array(
+                        '学号', '姓名', '性别', '手机', '班级', '邮箱'
+                    ));
+                    $sheet->setWidth([
+                        'A' => 11,
+                        'B' => 8,
+                        'C' => 5,
+                        'D' => 12,
+                        'E' => 9,
+                        'F' => 20,
+                        ]);
+                    $sheet->getDefaultStyle();
+
+            });
+
+        })->export('xls');
+    }
+
+    /**
+     * @return 学生信息数组
+     */
+    public function getUsersDatas()
+    {
+        return User::where('is_admin', 0)
+                    ->select('id', 'name', 'sex', 'phone', 'pro_class', 'email')
+                    ->get()
+                    ->toArray();
+    }
+
+    /**
+     * 得到成绩表
+     */
+    public function grade()
+    {
+        $grades = $this->getGradeDatas();
+
+        Excel::create('学生成绩表', function($excel) use($grades) {
+
+            $excel->sheet('sheetName', function($sheet) use($grades) {
+
+                $sheet->fromArray($grades, null, 'A1', false, false);
+
+                $sheet->prependRow(1, array(
+                    '学号', '姓名', '高数', '英语', 'C语言', '体育', '思修', '软件'
+                    ));
+
+                $sheet->setWidth([
+                    'A' => 11,
+                    'B' => 10,
+                    'C' => 5,
+                    'D' => 5,
+                    'E' => 6,
+                    'F' => 5,
+                    'G' => 5,
+                    'H' => 5,
+                    ]);
+
+            });
+        })->export('xls');
+
+    }
+
+    /**
+     * 获取学生成绩数组
+     */
+    public function getGradeDatas()
+    {
+        $grades = Grade::select('user_id', 'id', 'math',
+            'english', 'c', 'sport', 'think', 'soft')->get()->toArray();
+
+        foreach ($grades as $key => $value) {
+            $grades[$key]['id'] = User::findOrFail($value['user_id'])->name;
+        }
+
+        return $grades;
+
+    }
+
+我总结了一下Excel的输出
+
+* 生成数据数组
+* 输出数据表
+
+所以我写了两个得到想要输出的数据功能函数,这里对照官方文档看一下,没什么好解释的,然后刷新浏览器,你就可以下载名单和导出成绩了.
+
+最后,真心谢谢能看到这样的小伙伴!
