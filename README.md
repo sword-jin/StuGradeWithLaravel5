@@ -10,7 +10,7 @@
 * [安装](#feature5)
 * [详细学习过程](#feature6)
 
-<a name="feature2"></a>
+<a name="feature1"></a>
 ## 功能
 * 学生端
     * 登录完善修改个人信息,查看成绩
