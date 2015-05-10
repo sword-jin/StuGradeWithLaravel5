@@ -38,7 +38,8 @@
                         </div>
                         <div class="form-group">
                             <div class="col-md-6 col-md-offset-4">
-                                {!! Form::submit('Login', ['class' => 'btn btn-primary form-control']) !!}
+                                {!! Form::submit('Login', ['class' => 'btn btn-primary']) !!}
+                                <a class="btn btn-link" href="{{ url('/password/email') }}">忘记密码？</a>
                             </div>
                         </div>
                     {!! Form::close() !!}
