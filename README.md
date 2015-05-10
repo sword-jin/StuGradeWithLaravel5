@@ -967,11 +967,11 @@ aliases数组中添加
     #查看成绩排名
     Route::get('admin/grade', [
         'as' => 'grade_list', 'uses' => 'Admin\GradeController@index']);
-    #资源控制器,学生的增删改查
-    Route::resource('admin', 'Admin\AdminController');
     #上传分数
     Route::post('admin/upload_grade', [
         'as' => 'upload_grade', 'uses' => 'Admin\AdminController@upload_grade']);
+    #资源控制器,学生的增删改查
+    Route::resource('admin', 'Admin\AdminController');
 
 首先来看看我们的资源控制器, [官方文档](http://www.golaravel.com/laravel/docs/5.0/controllers/), 运行(注意路径):
 
@@ -1235,3 +1235,168 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 现在我们开始添加学生吧,超过10条就可以了,以便于我们后面的效果测试
 
 ![list](http://img1.ph.126.net/_L4uIqT4-nyfjOqYMWPg5Q==/1166432303506973500.jpg)
+
+接下来完成我们更新成绩功能.
+
+    #上传分数
+    Route::post('admin/upload_grade', [
+        'as' => 'upload_grade', 'uses' => 'Admin\AdminController@upload_grade']);
+
+这是一个post路由(响应post http请求), 现在完成更新分数的form表达,讲前面的redd1替换成
+
+    @include('Admin.upload_grade')
+
+创建Admin/upload_grade.blade.php:
+
+    <div class="modal fade" id="myModal{{ $user->id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="myModalLabel">{{ $user->name }}</h4>
+                </div>
+                {!! Form::model($user->grade, ['url' => '/admin/upload_grade', 'class' => 'form-horizontal']) !!}
+
+                  <div class="modal-body">
+
+                    {!! Form::hidden('user_id', $user->id) !!}
+                    <h4>
+                      {!! Form::label('math', '高数: ', ['class' => 'control-label']) !!}
+                      {!! Form::text('math', null, ['class' => 'form-control', 'required']) !!}
+                    </h4>
+                    <h4>
+                      {!! Form::label('english', '英语: ', ['class' => 'control-label']) !!}
+                      {!! Form::text('english', null, ['class' => 'form-control', 'required']) !!}
+                    </h4>
+                    <h4>
+                      {!! Form::label('c', 'C语言: ', ['class' => 'control-label']) !!}
+                      {!! Form::text('c', null, ['class' => 'form-control', 'required']) !!}
+                    </h4>
+                    <h4>
+                      {!! Form::label('sport', '体育: ', ['class' => 'control-label']) !!}
+                      {!! Form::text('sport', null, ['class' => 'form-control', 'required']) !!}
+                    </h4>
+                    <h4>
+                      {!! Form::label('think', '思修: ', ['class' => 'control-label']) !!}
+                      {!! Form::text('think', null, ['class' => 'form-control', 'required']) !!}
+                    </h4>
+                    <h4>
+                      {!! Form::label('soft', '软件: ', ['class' => 'control-label']) !!}
+                      {!! Form::text('soft', null, ['class' => 'form-control', 'required']) !!}
+                    </h4>
+
+                  </div>
+
+                  <div class="modal-footer">
+                    {!! Form::button('关闭', ['class' => 'btn btn-default', 'data-dismiss' => 'modal']) !!}
+                    {!! Form::submit('提交', ['class' => 'btn btn-success']) !!}
+                  </div>
+
+                {!! Form::close() !!}
+            </div>
+        </div>
+    </div>
+
+现在刷新浏览器,点击更新分数
+
+![upload_grade](http://img2.ph.126.net/9WNcF_uh1fkVwOe0-k_9HQ==/6630559791327277643.jpg)
+
+接下来就可以完成分数的上传功能,打开AdminController,添加:
+
+    public function upload_grade(Request $request)
+    {
+        $this->validate($request, Grade::rules());
+        $grade = Grade::where('user_id', $request->user_id)->first();
+        $grade->math = $request->math;
+        $grade->english = $request->english;
+        $grade->c = $request->c;
+        $grade->sport = $request->sport;
+        $grade->think = $request->think;
+        $grade->soft = $request->soft;
+        $grade->save();
+        session()->flash('message', '成绩提交成功');
+        return Redirect::back();
+    }
+
+这里有个地方有点问题,分数应该是0-100,参考前面Grade.php中的静态方法
+
+    digits_between:1,2   #代表是数字1位到2位,也就是0-99
+
+本来应该使用 min:0|max:100 但是这里实际会把分数当作字符串处理,而不是数字,这样写,会判断成0-100长度的字符串,算是一个小bug吧,就先这样,我还没见过我们学校有考试100的人,哈哈！
+
+下面,我们给每个人上传一下分数.你现在能随便登录一个学生帐号密码,能查询到自己的成绩
+
+对了,别忘了在validation.php里面设置你的提示信息,这里就不再赘述.
+
+接着,我们来完成成绩排名,看我们的路由,先新建Grade控制器:
+
+    php artisan make:controller Admin/GradeController --plain
+
+两个方法:
+
+    public function __construct()
+    {
+        $this->middleware('admin');
+    }
+
+    public function index()
+    {
+        $result = User::where('is_admin', 0);
+        $users = $result->get();
+        $count = $result->count();
+        return view('Admin.list', compact('count', 'users'));
+    }
+
+$users是我们的学生信息资源,传递到Admin/list.blade.php视图.
+
+    @extends('master')
+
+    @section('title')
+        学生成绩列表
+    @stop
+
+    @section('content')
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10">
+                    <h3 align="center">学生成绩表</h3>
+                    <table class="table table-striped" id="sortTable">
+                        <thead>
+                            <tr>
+                                <th class="col-md-2">学号 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                                <th>姓名 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                                <th>高数 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                                <th>英语 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                                <th>C语言 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                                <th>体育 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                                <th>思修 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                                <th>软件 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            </tr>
+                        </thead>
+
+                        @foreach ($users as $user)
+                            <tr class="myGrade">
+                                <td>{{$user->id}}</td>
+                                <td>{{$user->name}}</td>
+                                <td>{{$user->grade->math}}</td>
+                                <td>{{$user->grade->english}}</td>
+                                <td>{{$user->grade->c}}</td>
+                                <td>{{$user->grade->sport}}</td>
+                                <td>{{$user->grade->think}}</td>
+                                <td>{{$user->grade->soft}}</td>
+                            </tr>
+                        @endforeach
+                    </table>
+                </div>
+
+                @include('Admin.right_bar')
+
+            </div>
+        </div>
+    @stop
+
+在浏览其中点击成绩排名,你能看到所有人的成绩表吧
+
+![grade1](http://img0.ph.126.net/J3hykK_OSTliVhw94Gxt-A==/6630546597187744827.jpg)
+
