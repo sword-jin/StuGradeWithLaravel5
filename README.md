@@ -769,7 +769,46 @@ aliases数组中添加
         return Redirect::route('stu_home');
     }
 
-如果现在乱填表单,我们依旧可以看到错误提示,而且错误提示会自动消失,因为我们在edit.blade.php中添加了 @include('errors.list')
+这个时候,我们也可以选择使用自己的Request,首先我们使用如下命令建立Request:
+
+    php artisan make:request StudentMesRequest
+
+修改我们的StudentMesRequest.php:
+
+    /**
+    * Determine if the user is authorized to make this request.
+    * 这里先设置为true，表示有权限去使用这个Request,不然请求会被拒绝
+    * @return bool
+    */
+    public function authorize()
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        return [
+            'phone' => 'required|digits:11',
+            'pro_class' => 'required',
+            'email' => 'required|email'
+        ];
+    }
+
+然后修改update方法:
+
+    public function update(StudentMesRequest $request)
+    {
+        Auth::user()->update($request->all());
+
+        return Redirect::route('stu_home');
+    }
+
+以上两种方法都可以完成验证功能(看自己喜好吧,使用后者代码比较简洁,模块化,前面的登录也可以这样来写,你可以跳转回去试试),如果现在乱填表单,我们依旧可以看到错误提示,而且错误提示会自动消失,因为我们在edit.blade.php中添加了 @include('errors.list')
 
 如果填写规范,提交后返回到stu_home页.这个时候我们可以添加一个成功信息,来增强用户体验
 
@@ -983,3 +1022,7 @@ aliases数组中添加
 * 在url中输入http://localhost:8000/logout,退出登录回到登录页
 
 * 输入一组学生帐号,然后在url中输入http://localhost:8000/admin,你会看到页面刷新,并且弹出警告信息.
+
+![warning](http://img0.ph.126.net/r-Y8HYxnc9GaoJYbNjp8mA==/2777313595222015641.jpg)
+
+下面,继续

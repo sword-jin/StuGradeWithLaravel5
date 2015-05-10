@@ -3,7 +3,7 @@
 use Auth;
 use Redirect;
 use App\User;
-use App\Http\Requests;
+use App\Http\Requests\StudentMesRequest;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
@@ -37,14 +37,8 @@ class StudentController extends Controller {
         return view('stu.edit');
     }
 
-    public function update(Request $request)
+    public function update(StudentMesRequest $request)
     {
-        $this->validate($request, [
-            'phone' => 'required|digits:11',
-            'pro_class' => 'required',
-            'email' => 'required|email'
-            ]);
-
         Auth::user()->update($request->all());
 
         session()->flash('message', '个人信息修改成功');
