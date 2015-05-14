@@ -1430,13 +1430,15 @@ $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
 
 打开我们的main.js,添加:
 
-    $('.myGrade').each(function(){
-        $(this).children().each(function(){
-            if ($(this).html() < 60){
-                $(this).addClass("notPass");
-            }
-        });
+```js
+$('.myGrade').each(function(){
+    $(this).children().each(function(){
+        if ($(this).html() < 60){
+            $(this).addClass("notPass");
+        }
     });
+});
+```
 
 然后新建一个mian.css文件,放在public/css目录下
 
@@ -1481,21 +1483,23 @@ $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
 
 然后打开gulpfile.js,修改:
 
-    var elixir = require('laravel-elixir');
+```js
+var elixir = require('laravel-elixir');
 
-    elixir(function(mix) {
-        mix.styles([
-            "bootstrap.min.css",
-            "main.css"
-            ]);
+elixir(function(mix) {
+    mix.styles([
+        "bootstrap.min.css",
+        "main.css"
+        ]);
 
-        mix.scripts([
-            "jquery.min.js",
-            "bootstrap.min.js",
-            "jquery.tablesorter.min.js",
-            "main.js"
-            ]);
-    });
+    mix.scripts([
+        "jquery.min.js",
+        "bootstrap.min.js",
+        "jquery.tablesorter.min.js",
+        "main.js"
+        ]);
+});
+```
 
 接着执行:
 
@@ -1505,9 +1509,11 @@ $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
 
 接着你可以删除master.blade.php里所有引入的css和js脚本,现在只需要引入两个文件:
 
-    <link rel="stylesheet" type="text/css" href="{{ asset('/css/all.css') }}">
+```html
+<link rel="stylesheet" type="text/css" href="{{ asset('/css/all.css') }}">
 
-    <script type="text/javascript" src="/js/all.js"></script>
+<script type="text/javascript" src="/js/all.js"></script>
+```
 
 刷新浏览器,查看各个功能,正常使用(确保public文件夹下引入bootstrap的fonts文件)
 
@@ -1535,123 +1541,129 @@ $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
 
 在TestController的index方法中添加:
 
-    Excel::create('测试', function($excel) {
+```php
+Excel::create('测试', function($excel) {
 
-    $excel->sheet('Sheetname', function($sheet) {
+$excel->sheet('Sheetname', function($sheet) {
 
-        $sheet->fromArray(array(
-            array('data1', 'data2'),
-            array('data3', 'data4')
-        ));
+    $sheet->fromArray(array(
+        array('data1', 'data2'),
+        array('data3', 'data4')
+    ));
 
-    });
+});
 
-    })->export('xls');
+})->export('xls');
+```
 
 然后你可以修改right_bar.blade.php中一个超链接地址为 href="/test",接着点击,你会发现浏览器提示下载文件   测试.xls,就是这么简单.
 
 最后我们来完成名单成绩的下载,添加路由:
 
-    Route::get('download/stuList', [
-    'as' => 'download_stu_list_excel', 'uses' => 'Admin\ExcelController@stuList']);
+```php
+Route::get('download/stuList', [
+'as' => 'download_stu_list_excel', 'uses' => 'Admin\ExcelController@stuList']);
 
-    Route::get('download/grade', [
-    'as' => 'download_grade_list_excel', 'uses' => 'Admin\ExcelController@grade']);
+Route::get('download/grade', [
+'as' => 'download_grade_list_excel', 'uses' => 'Admin\ExcelController@grade']);
+```
 
 执行:
 
     php artisan make:controller Admin/EcxelController --plain
 
-    /**
-     * 得到学生名单，下载excel文档
-     */
-    public function stuList()
-    {
-        $users = $this->getUsersDatas();
+```php
+/**
+ * 得到学生名单，下载excel文档
+ */
+public function stuList()
+{
+    $users = $this->getUsersDatas();
 
-        Excel::create('学生信息表', function($excel) use($users) {
+    Excel::create('学生信息表', function($excel) use($users) {
 
-            $excel->sheet('sheetName', function($sheet) use($users) {
+        $excel->sheet('sheetName', function($sheet) use($users) {
 
-                    $sheet->fromArray($users, null, 'A1', false, false);
-
-                    $sheet->prependRow(1, array(
-                        '学号', '姓名', '性别', '手机', '班级', '邮箱'
-                    ));
-                    $sheet->setWidth([
-                        'A' => 11,
-                        'B' => 8,
-                        'C' => 5,
-                        'D' => 12,
-                        'E' => 9,
-                        'F' => 20,
-                        ]);
-                    $sheet->getDefaultStyle();
-
-            });
-
-        })->export('xls');
-    }
-
-    /**
-     * @return 学生信息数组
-     */
-    public function getUsersDatas()
-    {
-        return User::where('is_admin', 0)
-                    ->select('id', 'name', 'sex', 'phone', 'pro_class', 'email')
-                    ->get()
-                    ->toArray();
-    }
-
-    /**
-     * 得到成绩表
-     */
-    public function grade()
-    {
-        $grades = $this->getGradeDatas();
-
-        Excel::create('学生成绩表', function($excel) use($grades) {
-
-            $excel->sheet('sheetName', function($sheet) use($grades) {
-
-                $sheet->fromArray($grades, null, 'A1', false, false);
+                $sheet->fromArray($users, null, 'A1', false, false);
 
                 $sheet->prependRow(1, array(
-                    '学号', '姓名', '高数', '英语', 'C语言', '体育', '思修', '软件'
-                    ));
-
+                    '学号', '姓名', '性别', '手机', '班级', '邮箱'
+                ));
                 $sheet->setWidth([
                     'A' => 11,
-                    'B' => 10,
+                    'B' => 8,
                     'C' => 5,
-                    'D' => 5,
-                    'E' => 6,
-                    'F' => 5,
-                    'G' => 5,
-                    'H' => 5,
+                    'D' => 12,
+                    'E' => 9,
+                    'F' => 20,
                     ]);
+                $sheet->getDefaultStyle();
 
-            });
-        })->export('xls');
+        });
 
+    })->export('xls');
+}
+
+/**
+ * @return 学生信息数组
+ */
+public function getUsersDatas()
+{
+    return User::where('is_admin', 0)
+                ->select('id', 'name', 'sex', 'phone', 'pro_class', 'email')
+                ->get()
+                ->toArray();
+}
+
+/**
+ * 得到成绩表
+ */
+public function grade()
+{
+    $grades = $this->getGradeDatas();
+
+    Excel::create('学生成绩表', function($excel) use($grades) {
+
+        $excel->sheet('sheetName', function($sheet) use($grades) {
+
+            $sheet->fromArray($grades, null, 'A1', false, false);
+
+            $sheet->prependRow(1, array(
+                '学号', '姓名', '高数', '英语', 'C语言', '体育', '思修', '软件'
+                ));
+
+            $sheet->setWidth([
+                'A' => 11,
+                'B' => 10,
+                'C' => 5,
+                'D' => 5,
+                'E' => 6,
+                'F' => 5,
+                'G' => 5,
+                'H' => 5,
+                ]);
+
+        });
+    })->export('xls');
+
+}
+
+/**
+ * 获取学生成绩数组
+ */
+public function getGradeDatas()
+{
+    $grades = Grade::select('user_id', 'id', 'math',
+        'english', 'c', 'sport', 'think', 'soft')->get()->toArray();
+
+    foreach ($grades as $key => $value) {
+        $grades[$key]['id'] = User::findOrFail($value['user_id'])->name;
     }
 
-    /**
-     * 获取学生成绩数组
-     */
-    public function getGradeDatas()
-    {
-        $grades = Grade::select('user_id', 'id', 'math',
-            'english', 'c', 'sport', 'think', 'soft')->get()->toArray();
+    return $grades;
 
-        foreach ($grades as $key => $value) {
-            $grades[$key]['id'] = User::findOrFail($value['user_id'])->name;
-        }
-
-        return $grades;
-
-    }
+}
+```
 
 我总结了一下Excel的输出
 
@@ -1732,7 +1744,7 @@ class PasswordController extends Controller {
 
 我们到登录页,点击忘记密码,游览器会提示我们 view(auth.password) 找不到,我们去新建视图文件auth/password.blade.php:
 
-```php
+```html
 @extends('master')
 
 @section('title')
@@ -1831,7 +1843,7 @@ Click here to reset your password: {{ url('password/reset/'.$token) }}
 
 点击邮件中的链接,浏览器会提示里找不到view(auth.reset),新建reset.blade.php
 
-```php
+```html
 @extends('master')
 
 @section('title')
