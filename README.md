@@ -609,7 +609,7 @@ aliases数组中添加
 
 这个时候错误信息的右边就会有一个关闭按钮,点击就可隐藏错误信息
 
-还有一种使用jQuery的一个小方法.在master.blade.php引入脚本main.cs
+还有一种使用jQuery的一个小方法.在master.blade.php引入脚本main.js
 
     ...
     <!-- script -->
