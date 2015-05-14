@@ -1794,20 +1794,22 @@ laravel5中给我们提供了简单使用的修改密码功能,官方文档,[lin
 
 修改 ..create_password_resets_table.php:
 
-    public function up()
+```php
+public function up()
+{
+    Schema::create('password_resets', function(Blueprint $table)
     {
-        Schema::create('password_resets', function(Blueprint $table)
-        {
-            $table->string('email')->index();
-            $table->string('token')->index();
-            $table->timestamp('created_at');
-        });
-    }
+        $table->string('email')->index();
+        $table->string('token')->index();
+        $table->timestamp('created_at');
+    });
+}
 
-    public function down()
-    {
-        Schema::drop('password_resets');
-    }
+public function down()
+{
+    Schema::drop('password_resets');
+}
+```
 
 执行:
 
@@ -1823,61 +1825,63 @@ Click here to reset your password: {{ url('password/reset/'.$token) }}
 
 点击邮件中的链接,浏览器会提示里找不到view(auth.reset),新建reset.blade.php
 
-    @extends('master')
+```php
+@extends('master')
 
-    @section('title')
-        修改密码
-    @stop
+@section('title')
+    修改密码
+@stop
 
-    @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Reset Password</div>
-                    <div class="panel-body">
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">Reset Password</div>
+                <div class="panel-body">
 
-                        @include('errors.list')
+                    @include('errors.list')
 
-                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="token" value="{{ $token }}">
+                    <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="token" value="{{ $token }}">
 
-                            <div class="form-group">
-                                <label class="col-md-4 control-label">E-Mail </label>
-                                <div class="col-md-6">
-                                    <input type="email" class="form-control" name="email" value="{{ old('email') }}">
-                                </div>
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">E-Mail </label>
+                            <div class="col-md-6">
+                                <input type="email" class="form-control" name="email" value="{{ old('email') }}">
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="col-md-4 control-label">Password</label>
-                                <div class="col-md-6">
-                                    <input type="password" class="form-control" name="password">
-                                </div>
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">Password</label>
+                            <div class="col-md-6">
+                                <input type="password" class="form-control" name="password">
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="col-md-4 control-label">Confirm Password</label>
-                                <div class="col-md-6">
-                                    <input type="password" class="form-control" name="password_confirmation">
-                                </div>
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">Confirm Password</label>
+                            <div class="col-md-6">
+                                <input type="password" class="form-control" name="password_confirmation">
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <div class="col-md-6 col-md-offset-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        Reset Password
-                                    </button>
-                                </div>
+                        <div class="form-group">
+                            <div class="col-md-6 col-md-offset-4">
+                                <button type="submit" class="btn btn-primary">
+                                    Reset Password
+                                </button>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-    @stop
+</div>
+@stop
+```
 
 接着你就可以测试密码修改了,这个功能也就完成了.
 
@@ -1885,4 +1889,4 @@ Click here to reset your password: {{ url('password/reset/'.$token) }}
 
 * 你可以在 /resources/lang/en/passwords.php下查看修改密码的一些提示信息,你也可以按照自己的想法去修改他们
 
-* 你可以在 /vendor/laravel/framework/src/Illuminate/Foundation/Auth/ResetPasswords.php 看到修改密码功能实现的各个细节,你可以去解读,修改成自己想要的功能
+* 你可以在 /vendor/laravel/framework/src/Illuminate/Foundation/Auth/ResetPasswords.php 看到修改密码功能实现的各个细节,包括更改密码视图地址,更改成功后自动执行登录等,可以去看看.
