@@ -1677,107 +1677,109 @@ laravel5中给我们提供了简单使用的修改密码功能,官方文档,[lin
 
 修改PasswordController.php:
 
-    <?php namespace App\Http\Controllers;
+```php
+<?php namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use Illuminate\Contracts\Auth\Guard;
-    use Illuminate\Contracts\Auth\PasswordBroker;
-    use Illuminate\Foundation\Auth\ResetsPasswords;
+use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Foundation\Auth\ResetsPasswords;
 
-    class PasswordController extends Controller {
+class PasswordController extends Controller {
 
-        /*
-        |--------------------------------------------------------------------------
-        | Password Reset Controller
-        |--------------------------------------------------------------------------
-        |
-        | This controller is responsible for handling password reset requests
-        | and uses a simple trait to include this behavior. You're free to
-        | explore this trait and override any methods you wish to tweak.
-        |
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Password Reset Controller
+    |--------------------------------------------------------------------------
+    |
+    | This controller is responsible for handling password reset requests
+    | and uses a simple trait to include this behavior. You're free to
+    | explore this trait and override any methods you wish to tweak.
+    |
+    */
 
-        use ResetsPasswords;
+    use ResetsPasswords;
 
-        /**
-         * Create a new password controller instance.
-         *
-         * @param  \Illuminate\Contracts\Auth\Guard  $auth
-         * @param  \Illuminate\Contracts\Auth\PasswordBroker  $passwords
-         * @return void
-         */
-        public function __construct(Guard $auth, PasswordBroker $passwords)
-        {
-            $this->auth = $auth;
-            $this->passwords = $passwords;
-            $this->subject = '学生成绩系统用户密码修改';
-            $this->redirectTo = '/';
-            $this->middleware('guest');
-        }
-
+    /**
+     * Create a new password controller instance.
+     *
+     * @param  \Illuminate\Contracts\Auth\Guard  $auth
+     * @param  \Illuminate\Contracts\Auth\PasswordBroker  $passwords
+     * @return void
+     */
+    public function __construct(Guard $auth, PasswordBroker $passwords)
+    {
+        $this->auth = $auth;
+        $this->passwords = $passwords;
+        $this->subject = '学生成绩系统用户密码修改';
+        $this->redirectTo = '/';
+        $this->middleware('guest');
     }
+
+}
+```
 
 这些是laravel5自带的,我只是直接借用过来
 
 这时候修改我们的login.blade.php:
 
 ```php
-    ...
-    {!! Form::submit('Login', ['class' => 'btn btn-primary']) !!}
-    <a class="btn btn-link" href="{{ url('/password/email') }}">忘记密码？</a>
-    ...
-```php
+...
+{!! Form::submit('Login', ['class' => 'btn btn-primary']) !!}
+<a class="btn btn-link" href="{{ url('/password/email') }}">忘记密码？</a>
+...
+```
 
 我们到登录页,点击忘记密码,游览器会提示我们 view(auth.password) 找不到,我们去新建视图文件auth/password.blade.php:
 
 ```php
-    @extends('master')
+@extends('master')
 
-    @section('title')
-        修改密码
-    @stop
+@section('title')
+    修改密码
+@stop
 
-    @section('content')
+@section('content')
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <div class="panel panel-default">
-                    <div class="panel-heading">密码找回</div>
-                    <div class="panel-body">
-                        @if (session('status'))
-                            <div class="alert alert-success">
-                                {{ session('status') }}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">密码找回</div>
+                <div class="panel-body">
+                    @if (session('status'))
+                        <div class="alert alert-success">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    @include('errors.list')
+
+                    <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/email') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">E-Mail Address</label>
+                            <div class="col-md-6">
+                                <input type="email" class="form-control" name="email" value="{{ old('email') }}" required>
                             </div>
-                        @endif
+                        </div>
 
-                        @include('errors.list')
-
-                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/email') }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-
-                            <div class="form-group">
-                                <label class="col-md-4 control-label">E-Mail Address</label>
-                                <div class="col-md-6">
-                                    <input type="email" class="form-control" name="email" value="{{ old('email') }}" required>
-                                </div>
+                        <div class="form-group">
+                            <div class="col-md-6 col-md-offset-4">
+                                <button type="submit" class="btn btn-primary">
+                                    发送邮件
+                                </button>
                             </div>
-
-                            <div class="form-group">
-                                <div class="col-md-6 col-md-offset-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        发送邮件
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    @stop
+@stop
 ```
 
 这时候来配置我们的一些文件,打开config/mail.php:
