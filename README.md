@@ -1813,6 +1813,12 @@ laravel5中给我们提供了简单使用的修改密码功能,官方文档,[lin
 
     php artisan migrate
 
+这是时候,建立我们的[邮件视图文件],新建emails/password.blade.php:
+
+```php
+Click here to reset your password: {{ url('password/reset/'.$token) }}
+```
+
 这时候刷新浏览器,填写一个存在的邮箱后(前提是你登录进去修改过的邮箱),这里需要使用自己的邮箱方便测试,点击发送,马上你就可以收到邮件了.
 
 点击邮件中的链接,浏览器会提示里找不到view(auth.reset),新建reset.blade.php
