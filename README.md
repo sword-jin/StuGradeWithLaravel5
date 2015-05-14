@@ -1721,13 +1721,16 @@ laravel5中给我们提供了简单使用的修改密码功能,官方文档,[lin
 
 这时候修改我们的login.blade.php:
 
+```php
     ...
     {!! Form::submit('Login', ['class' => 'btn btn-primary']) !!}
     <a class="btn btn-link" href="{{ url('/password/email') }}">忘记密码？</a>
     ...
+```php
 
 我们到登录页,点击忘记密码,游览器会提示我们 view(auth.password) 找不到,我们去新建视图文件auth/password.blade.php:
 
+```php
     @extends('master')
 
     @section('title')
@@ -1775,6 +1778,7 @@ laravel5中给我们提供了简单使用的修改密码功能,官方文档,[lin
     </div>
 
     @stop
+```
 
 这时候来配置我们的一些文件,打开config/mail.php:
 
