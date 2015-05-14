@@ -161,22 +161,24 @@
 
 打开 /database/migrations/._create_users_table.php,修改up方法
 
-    public function up()
+```php
+public function up()
+{
+    Schema::create('users', function(Blueprint $table)
     {
-        Schema::create('users', function(Blueprint $table)
-        {
-            $table->integer('id')->unique()->unsigned();  #学号,唯一,取正数
-            $table->string('name');                       #姓名
-            $table->string('password');                   #密码
-            $table->string('phone')->default('');  #手机 默认为空(不是可以为空,值为'')
-            $table->string('sex')->default('');    #性别 同上
-            $table->string('email')->default('');  #邮箱 同上
-            $table->string('pro_class')->default(''); #班级 同上
-            $table->boolean('is_admin')->default(0);  #是否为管理员 默认为学生
-            $table->rememberToken();
-            $table->timestamps();
-        });
-    }
+        $table->integer('id')->unique()->unsigned();  #学号,唯一,取正数
+        $table->string('name');                       #姓名
+        $table->string('password');                   #密码
+        $table->string('phone')->default('');  #手机 默认为空(不是可以为空,值为'')
+        $table->string('sex')->default('');    #性别 同上
+        $table->string('email')->default('');  #邮箱 同上
+        $table->string('pro_class')->default(''); #班级 同上
+        $table->boolean('is_admin')->default(0);  #是否为管理员 默认为学生
+        $table->rememberToken();
+        $table->timestamps();
+    });
+}
+```
 
 这里为什么这么写,首先我觉的老师新增学生时候是没有填写他信息的权限的,只能生成学号,姓名。密码,所以其他都默认为空,需要学生登录后自己去填写。
 
@@ -190,45 +192,47 @@
 
 在/database/seeds下新建 UserTableSeeder.php
 
-    <?php
+```php
+<?php
 
-    use Illuminate\Database\Seeder;
-    use App\User;
-    use App\Grade;
+use Illuminate\Database\Seeder;
+use App\User;
+use App\Grade;
 
-    class UserTableSeeder extends Seeder {
+class UserTableSeeder extends Seeder {
 
-        /**
-         * Run the database seeds.
-         *
-         * @return void
-         */
-        public function run()
-        {
-            DB::table('users')->delete();
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        DB::table('users')->delete();
 
-            User::create([
-            'id' => 1210311232,
-            'name' => '李锐',
-            'password' => Hash::make('1210311232')
-            ]);
+        User::create([
+        'id' => 1210311232,
+        'name' => '李锐',
+        'password' => Hash::make('1210311232')
+        ]);
 
-            User::create([
-            'id' => 1210311233,
-            'name' => '陈曦',
-            'password' => Hash::make('1210311233')
-            ]);
+        User::create([
+        'id' => 1210311233,
+        'name' => '陈曦',
+        'password' => Hash::make('1210311233')
+        ]);
 
-            User::create([
-            'id' => 1234567890,
-            'name' => '管理员',
-            'password' => Hash::make('root'),
-            'is_admin' => 1
-            ]);
-
-        }
+        User::create([
+        'id' => 1234567890,
+        'name' => '管理员',
+        'password' => Hash::make('root'),
+        'is_admin' => 1
+        ]);
 
     }
+
+}
+```
 
 然后讲DatabaseSeeder.php中 $this->call('UserTableSeeder')前面的注释取消.
 
@@ -243,15 +247,17 @@
 
 找到WelcomeController.php,可以看到两段代码:
 
-    public function __construct()
-    {
-        $this->middleware('guest');
-    }
+```php
+public function __construct()
+{
+    $this->middleware('guest');
+}
 
-    public function index()
-    {
-        return view('welcome');
-    }
+public function index()
+{
+    return view('welcome');
+}
+```
 
 上面的构造函数,有什么作用？里面的中间件guest,在Kernel.php 中的routeMiddleware数组里面有注册,它的功能在App\Http\Middleware\RedirectIfAuthenticated.php里面可以看到。
 
@@ -261,139 +267,149 @@ index方法返回的是welcome页面.
 
 这时候,我们先构建一个基础页面模版,因为后面的每个页面都是需要继承它的.创建 master.blade.php文件.
 
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title> @yield('title') </title>
-        <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    </head>
-    <body>
-        <nav class="navbar navbar-default">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                        <span class="sr-only">Toggle Navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    @if(Auth::guest())
-                        <a class="navbar-brand" href="/">学生成绩管理</a>
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> @yield('title') </title>
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle Navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @if(Auth::guest())
+                    <a class="navbar-brand" href="/">学生成绩管理</a>
+                @else
+                    @if (Auth::user()->is_admin)
+                        <a class="navbar-brand" href="/admin">学生成绩管理</a>
                     @else
-                        @if (Auth::user()->is_admin)
-                            <a class="navbar-brand" href="/admin">学生成绩管理</a>
-                        @else
-                            <a class="navbar-brand" href="/">学生成绩管理</a>
-                        @endif
+                        <a class="navbar-brand" href="/">学生成绩管理</a>
                     @endif
+                @endif
 
-                </div>
-
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav">
-                        <li><a href="http://www.golaravel.com" target="__blank">Power by laravel5</a></li>
-                </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        @if (Auth::guest())
-                        @else
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ Auth::user()->name }} <span class="caret"></span></a>
-                                <ul class="dropdown-menu" role="menu">
-                                    <li><a href="{{ url('/logout') }}">退出</a></li>
-                                </ul>
-                            </li>
-                        @endif
-                    </ul>
-                </div>
             </div>
-        </nav>
 
-        <!-- <div class="container">
-            @include('flash')
-        </div> -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="http://www.golaravel.com" target="__blank">Power by laravel5</a></li>
+            </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    @if (Auth::guest())
+                    @else
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ Auth::user()->name }} <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="{{ url('/logout') }}">退出</a></li>
+                            </ul>
+                        </li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-        @yield('content')
+    <!-- <div class="container">
+        @include('flash')
+    </div> -->
 
-    <!-- script -->
-    <script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
-    <script src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    </body>
-    </html>
+    @yield('content')
+
+<!-- script -->
+<script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
+<script src="http://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</body>
+</html>
+```
 
 @include('flash')先注释掉,这里暂时还不需要.(记得注释,你可以先删除,最好）
 
 创建我们的welcome.blade.php,随便修饰一下(前端不行 :) )
 
-    @extends('master')   {{-- 继承master模版 --}}
+```html
+@extends('master')   {{-- 继承master模版 --}}
 
-    @section('title')   {{-- 对应@yield('title') --}}
-        学生成绩管理系统
-    @stop
+@section('title')   {{-- 对应@yield('title') --}}
+    学生成绩管理系统
+@stop
 
-    @section('content')   {{-- 对应@yield('content') --}}
-        <div class="container">
-            <div class="jumbotron">
-                <h2><div class="quote">{{ Inspiring::quote() }}</div></h2>
-                <p>同学们登录后先修改相关资料</p>
-                <p>查询分数,有疑问咨询管理员</p>
-                <p><a class="btn btn-primary btn-lg" href="/login" role="button">点击登录</a></p>
-            </div>
+@section('content')   {{-- 对应@yield('content') --}}
+    <div class="container">
+        <div class="jumbotron">
+            <h2><div class="quote">{{ Inspiring::quote() }}</div></h2>
+            <p>同学们登录后先修改相关资料</p>
+            <p>查询分数,有疑问咨询管理员</p>
+            <p><a class="btn btn-primary btn-lg" href="/login" role="button">点击登录</a></p>
         </div>
-    @stop
+    </div>
+@stop
+```
 
 ![Index](http://img1.ph.126.net/HmhY3w2qYDWr4RyQKdcfiQ==/6630430048955199565.jpg)
 
 <a name="route1"></a>
 好了,首页已经完成了,来看这三个路由
 
-    Route::get('login', [
-    'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
-    Route::post('login', [
-    'middleware' => 'guest', 'uses' => 'loginController@loginPost']);
-    Route::get('logout', [
-    'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
+```php
+Route::get('login', [
+'middleware' => 'guest', 'as' => 'login', 'uses' => 'loginController@loginGet']);
+Route::post('login', [
+'middleware' => 'guest', 'uses' => 'loginController@loginPost']);
+Route::get('logout', [
+'middleware' => 'auth', 'as' => 'logout', 'uses' => 'loginController@logout']);
+```
 
 -----
 完成登录登出的功能, 在路由中设置中间件, 过滤一些非法请求,关于中间件,参考[官方文档](www.golaravel.com/laravel/docs/5.0/middleware/)
 
 guest 只允许游客(没登陆的情况下)访问get路由login和post路由login,要是已经登录,就会跳转到相应页面,注意关键词响应。我们登录用户有两种,学生,和管理员,当他们在登录的情况下要想访问这两个路由,肯定会做出不同的响应。即,学生,跳转到学生主页,管理员,跳转到管理员主页.现在来看看RedirectIfAuthenticated.php
 
-    public function handle($request, Closure $next)
+```php
+public function handle($request, Closure $next)
+{
+    if ($this->auth->check())     <!-- 用户是否登录 -->
     {
-        if ($this->auth->check())     <!-- 用户是否登录 -->
-        {
-            if (!Auth::user()->is_admin) {
-                return new RedirectResponse(url('/stu/home'));  <!-- 不是管理员 -->
-            } else {
-                return new RedirectResponse(url('/admin'));   <!-- 管理员 -->
-            }
-
+        if (!Auth::user()->is_admin) {
+            return new RedirectResponse(url('/stu/home'));  <!-- 不是管理员 -->
+        } else {
+            return new RedirectResponse(url('/admin'));   <!-- 管理员 -->
         }
 
-        return $next($request);
     }
+
+    return $next($request);
+}
+```
 
 auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人子弟),看下源码 Authenticate.php
 
-    public function handle($request, Closure $next)
+```php
+public function handle($request, Closure $next)
+{
+    if ($this->auth->guest())    <!-- 没有登录,是游客 -->
     {
-        if ($this->auth->guest())    <!-- 没有登录,是游客 -->
+        if ($request->ajax())           <!-- 通过ajax来请求 -->
         {
-            if ($request->ajax())           <!-- 通过ajax来请求 -->
-            {
-                return response('Unauthorized.', 401);
-            }
-            else       <!-- 直接请求, 跳转到登录页 -->
-            {
-                return redirect()->guest('login');
-            }
+            return response('Unauthorized.', 401);
         }
-
-        return $next($request);
+        else       <!-- 直接请求, 跳转到登录页 -->
+        {
+            return redirect()->guest('login');
+        }
     }
+
+    return $next($request);
+}
+```
 
 也就是说只有登录了才能登出,就是这个意思。
 
@@ -403,57 +419,61 @@ auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人�
 
 在里面写上以下内容:
 
-    /**
-     * 返回login视图,登录页面
-     */
-    public function loginGet()
-    {
-        return view('login');
-    }
+```php
+/**
+ * 返回login视图,登录页面
+ */
+public function loginGet()
+{
+    return view('login');
+}
 
-    /**
-     * 登录响应
-     */
-    public function loginPost(Request $request)
-    {
-        $this->validate($request, User::rules());
-        $id = $request->get('id');
-        $password = $request->get('password');
-        if (Auth::attempt(['id' => $id, 'password' => $password], $request->get('remember'))) {
-            if (!Auth::user()->is_admin) {
-                return Redirect::route('stu_home');
-            } else {
-                return Redirect::action('Admin\AdminController@index');
-            }
-
+/**
+ * 登录响应
+ */
+public function loginPost(Request $request)
+{
+    $this->validate($request, User::rules());
+    $id = $request->get('id');
+    $password = $request->get('password');
+    if (Auth::attempt(['id' => $id, 'password' => $password], $request->get('remember'))) {
+        if (!Auth::user()->is_admin) {
+            return Redirect::route('stu_home');
         } else {
-            return Redirect::route('login')
-                ->withInput()
-                ->withErrors('学号或者密码不正确,请重试！');
+            return Redirect::action('Admin\AdminController@index');
         }
-    }
 
-    /**
-     * 用户登出
-     */
-    public function logout()
-    {
-        if (Auth::check()) {
-            Auth::logout();
-        }
-        return Redirect::route('login');
+    } else {
+        return Redirect::route('login')
+            ->withInput()
+            ->withErrors('学号或者密码不正确,请重试！');
     }
+}
+
+/**
+ * 用户登出
+ */
+public function logout()
+{
+    if (Auth::check()) {
+        Auth::logout();
+    }
+    return Redirect::route('login');
+}
+```
 
 可以使用validate验证用户输入,在laravel5中使用validate非常方便,注意第二个参数,User::rules(),
 这是在User模型中一个静态方法,接着在User.php中加入静态方法。
 
-    protected static function rules()
-    {
-        return [
-            'id' => 'required|digits:10',   <!-- 代表必需填写,10位数字 -->
-            'password' => 'required'        <!-- 必填 -->
-            ];
-    }
+```php
+protected static function rules()
+{
+    return [
+        'id' => 'required|digits:10',   <!-- 代表必需填写,10位数字 -->
+        'password' => 'required'        <!-- 必填 -->
+        ];
+}
+```
 
 验证用户登录使用了Auth::attempt(),这是laravel中自带的验证方法,非常好用,如果验证通过,接着判断是否是管理员,然后分别跳转到不同的url.
 
@@ -464,56 +484,58 @@ auth 只有登录用户才能访问(这个不知道怎么表达,我就不误人�
 
 这时候点击登录,laravel会告诉你view(login)不存在,创建login.blade.php文件
 
-    @extends('master')
+```html
+@extends('master')
 
-    @section('title')
-        欢迎登录
-    @stop
+@section('title')
+    欢迎登录
+@stop
 
-    @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <div class="panel panel-default">
-                    <div class="panel-heading">登录</div>
-                    <div class="panel-body">
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">登录</div>
+                <div class="panel-body">
 
-                        @include('errors.list')
+                    @include('errors.list')
 
-                        {!! Form::open(['url' => '/login', 'class' => 'form-horizontal', 'role' => 'form']) !!}
-                            <div class="form-group">
-                                {!! Form::label('id', '学号', ['class' => 'col-md-4 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::text('id', old('id'), ['class' => 'form-control', 'required']) !!}
+                    {!! Form::open(['url' => '/login', 'class' => 'form-horizontal', 'role' => 'form']) !!}
+                        <div class="form-group">
+                            {!! Form::label('id', '学号', ['class' => 'col-md-4 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::text('id', old('id'), ['class' => 'form-control', 'required']) !!}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            {!! Form::label('password', '密码', ['class' => 'col-md-4 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::password('password', ['class' => 'form-control', 'required']) !!}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 col-md-offset-4">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="remember"> Remember Me
+                                    </label>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                {!! Form::label('password', '密码', ['class' => 'col-md-4 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::password('password', ['class' => 'form-control', 'required']) !!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 col-md-offset-4">
+                                {!! Form::submit('Login', ['class' => 'btn btn-primary form-control']) !!}
                             </div>
-                            <div class="form-group">
-                                <div class="col-md-6 col-md-offset-4">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" name="remember"> Remember Me
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-md-6 col-md-offset-4">
-                                    {!! Form::submit('Login', ['class' => 'btn btn-primary form-control']) !!}
-                                </div>
-                            </div>
-                        {!! Form::close() !!}
-                    </div>
+                        </div>
+                    {!! Form::close() !!}
                 </div>
             </div>
         </div>
     </div>
-    @stop
+</div>
+@stop
+```
 
 这时候要是点击登录,还是会报错,因为在laravel5中Illuminate/Html组件被移了,我们可以在composer.json的required数组中加入
 
@@ -572,16 +594,18 @@ aliases数组中添加
 
 关于提示信息的隐藏,这里有两种简单的解决方案,参考bootstrap中的[警告框](http://v3.bootcss.com/components/#alerts-dismissible),修改/errors/list.blade.php
 
-    @if (count($errors) > 0)
-        <div class="alert alert-danger alert-dismissible" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+```html
+@if (count($errors) > 0)
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+```
 
 这个时候错误信息的右边就会有一个关闭按钮,点击就可隐藏错误信息
 
@@ -596,9 +620,11 @@ aliases数组中添加
 
 在public文件夹下新建文件 js/main.js
 
-    $(function () {
-        $('div.alert').delay(2500).slideUp(300);
-    });
+```js
+$(function () {
+    $('div.alert').delay(2500).slideUp(300);
+});
+```
 
 这是时候再产生错误信息,就会自动隐藏了
 
@@ -606,12 +632,14 @@ aliases数组中添加
 
 选择一组学号密码登录,你会看到url跳转到 http://localhost:8000/stu/home, 在前面loginController中loginPost方法中可以看到关于学生成功登录后的跳转,这时候去创建我们的路由.
 
-    Route::get('stu/home', [
-        'as' => 'stu_home', 'uses' => 'Stu\StudentController@home']);
-    Route::get('stu/edit', [
-        'as' => 'stu_edit', 'uses' => 'Stu\StudentController@edit']);
-    Route::post('stu/update', [
-        'as' => 'stu_update', 'uses' => 'Stu\StudentController@update']);
+```php
+Route::get('stu/home', [
+    'as' => 'stu_home', 'uses' => 'Stu\StudentController@home']);
+Route::get('stu/edit', [
+    'as' => 'stu_edit', 'uses' => 'Stu\StudentController@edit']);
+Route::post('stu/update', [
+    'as' => 'stu_update', 'uses' => 'Stu\StudentController@update']);
+```
 
 接着创建我们的控制器(注意路径, 在Stu下):
 
@@ -619,65 +647,69 @@ aliases数组中添加
 
 里面包括以上三个方法,我们一个一个来解决
 
-    /**
-     * 只允许登录用户访问
-     */
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+```php
+/**
+ * 只允许登录用户访问
+ */
+public function __construct()
+{
+    $this->middleware('auth');
+}
 
-    /**
-     * 返回学生主页
-     */
-    public function home()
-    {
-        return view('stu.home');
-    }
+/**
+ * 返回学生主页
+ */
+public function home()
+{
+    return view('stu.home');
+}
+```
 
 接下来去创建我们的视图文件stu/home.blade.php
 
-    @extends('master')
+```html
+@extends('master')
 
-    @section('title')
-        欢迎 -- {{ Auth::user()->name }}
-    @stop
+@section('title')
+    欢迎 -- {{ Auth::user()->name }}
+@stop
 
-    @section('content')
+@section('content')
 
-    <div class="container">
-        <div class="row">
-            <div class="col-md-10 col-md-offset-1">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <a href="/stu/home"><button class="btn btn-info">个人信息</button></a>
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <a href="/stu/home"><button class="btn btn-info">个人信息</button></a>
 
 
 
-                    </div>
+                </div>
 
-                    <div class="panel-body">
-                        <div class="personal-mes">
-                            学号: {{ Auth::user()->id }}
-                            <br />
-                            姓名: {{ Auth::user()->name }}
-                            <br />
-                            性别: {{ Auth::user()->sex }}
-                            <br />
-                            手机: {{ Auth::user()->phone }}
-                            <br />
-                            班级: {{ Auth::user()->pro_class }}
-                            <br />
-                            邮箱: {{ Auth::user()->email }}
-                            <hr />
-                            <a href="/stu/edit"><button class="btn btn-primary">修改资料</button></a>
-                        </div>
+                <div class="panel-body">
+                    <div class="personal-mes">
+                        学号: {{ Auth::user()->id }}
+                        <br />
+                        姓名: {{ Auth::user()->name }}
+                        <br />
+                        性别: {{ Auth::user()->sex }}
+                        <br />
+                        手机: {{ Auth::user()->phone }}
+                        <br />
+                        班级: {{ Auth::user()->pro_class }}
+                        <br />
+                        邮箱: {{ Auth::user()->email }}
+                        <hr />
+                        <a href="/stu/edit"><button class="btn btn-primary">修改资料</button></a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    @stop
+</div>
+@stop
+```
 
 刷新,你能看到自己的home页, 留意上面的代码,有一片空白,用来后面完成查分功能
 
@@ -685,81 +717,85 @@ aliases数组中添加
 
 接着我们完成修改资料功能,在StudentController.php中添加:
 
-    /**
-     * 返回修改资料页面
-     */
-    public function edit()
-    {
-        return view('stu.edit');
-    }
+```php
+/**
+ * 返回修改资料页面
+ */
+public function edit()
+{
+    return view('stu.edit');
+}
+```
 
 创建 stu/edit.blade.php
 
-    @extends('master')
+```html
+@extends('master')
 
-    @section('title')
-        修改个人信息
-    @stop
+@section('title')
+    修改个人信息
+@stop
 
-    @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-md-10 col-md-offset-1">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <a href="/stu/home"><button class="btn btn-info">个人信息</button></a>
-                    </div>
+@section('content')
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <a href="/stu/home"><button class="btn btn-info">个人信息</button></a>
+                </div>
 
-                    @include('errors.list')
+                @include('errors.list')
 
-                    <div class="panel-body">
-                        {!! Form::open(['url' => '/stu/update', 'class' => 'form-horizontal', 'role' => 'form']) !!}
-                            <div class="form-group">
-                                {!! Form::label('id', '学号: ', ['class' => 'col-md-2 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::text('id', Auth::user()->id, ['class' => 'form-control', 'readonly'])!!}
-                                </div>
+                <div class="panel-body">
+                    {!! Form::open(['url' => '/stu/update', 'class' => 'form-horizontal', 'role' => 'form']) !!}
+                        <div class="form-group">
+                            {!! Form::label('id', '学号: ', ['class' => 'col-md-2 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::text('id', Auth::user()->id, ['class' => 'form-control', 'readonly'])!!}
                             </div>
-                            <div class="form-group">
-                                {!! Form::label('name', '姓名: ', ['class' => 'col-md-2 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::text('name', Auth::user()->name, ['class' => 'form-control', 'readonly'])!!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            {!! Form::label('name', '姓名: ', ['class' => 'col-md-2 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::text('name', Auth::user()->name, ['class' => 'form-control', 'readonly'])!!}
                             </div>
-                            <div class="form-group">
-                                {!! Form::label('sex', '性别: ', ['class' => 'col-md-2 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::select('sex', ['男' => '男', '女' => '女'], Auth::user()->sex, ['class' => 'form-control']) !!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            {!! Form::label('sex', '性别: ', ['class' => 'col-md-2 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::select('sex', ['男' => '男', '女' => '女'], Auth::user()->sex, ['class' => 'form-control']) !!}
                             </div>
-                            <div class="form-group">
-                                {!! Form::label('phone', '手机: ', ['class' => 'col-md-2 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::text('phone', Auth::user()->phone, ['class' => 'form-control']) !!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            {!! Form::label('phone', '手机: ', ['class' => 'col-md-2 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::text('phone', Auth::user()->phone, ['class' => 'form-control']) !!}
                             </div>
-                            <div class="form-group">
-                                {!! Form::label('pro_class', '班级: ', ['class' => 'col-md-2 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::text('pro_class', Auth::user()->pro_class, ['class' => 'form-control']) !!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            {!! Form::label('pro_class', '班级: ', ['class' => 'col-md-2 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::text('pro_class', Auth::user()->pro_class, ['class' => 'form-control']) !!}
                             </div>
-                            <div class="form-group">
-                                {!! Form::label('email', '邮箱: ', ['class' => 'col-md-2 control-label']) !!}
-                                <div class="col-md-6">
-                                    {!! Form::email('email', Auth::user()->email, ['class' => 'form-control']) !!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            {!! Form::label('email', '邮箱: ', ['class' => 'col-md-2 control-label']) !!}
+                            <div class="col-md-6">
+                                {!! Form::email('email', Auth::user()->email, ['class' => 'form-control']) !!}
                             </div>
-                            <div class="group">
-                                {!! Form::submit('确认修改', ['class' => 'btn btn-success form-control']) !!}
-                            </div>
-                        {!! Form::close() !!}
-                    </div>
+                        </div>
+                        <div class="group">
+                            {!! Form::submit('确认修改', ['class' => 'btn btn-success form-control']) !!}
+                        </div>
+                    {!! Form::close() !!}
                 </div>
             </div>
         </div>
     </div>
-    @stop
+</div>
+@stop
+```
 
 点击修改资料:
 
@@ -767,18 +803,20 @@ aliases数组中添加
 
 我们可以看到表单提交到 localhost:8000/stu/update,我们的post路由update对应方法如下:
 
-    public function update(Request $request)
-    {
-        $this->validate($request, [
-            'phone' => 'required|digits:11',
-            'pro_class' => 'required',
-            'email' => 'required|email'
-            ]);
+```php
+public function update(Request $request)
+{
+    $this->validate($request, [
+        'phone' => 'required|digits:11',
+        'pro_class' => 'required',
+        'email' => 'required|email'
+        ]);
 
-        Auth::user()->update($request->all());
+    Auth::user()->update($request->all());
 
-        return Redirect::route('stu_home');
-    }
+    return Redirect::route('stu_home');
+}
+```
 
 这个时候,我们也可以选择使用自己的Request,首先我们使用如下命令建立Request:
 
@@ -786,38 +824,42 @@ aliases数组中添加
 
 修改我们的StudentMesRequest.php:
 
-    /**
-    * Determine if the user is authorized to make this request.
-    * 这里先设置为true，表示有权限去使用这个Request,不然请求会被拒绝
-    * @return bool
-    */
-    public function authorize()
-    {
-        return true;
-    }
+```php
+/**
+* Determine if the user is authorized to make this request.
+* 这里先设置为true，表示有权限去使用这个Request,不然请求会被拒绝
+* @return bool
+*/
+public function authorize()
+{
+    return true;
+}
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
-    {
-        return [
-            'phone' => 'required|digits:11',
-            'pro_class' => 'required',
-            'email' => 'required|email'
-        ];
-    }
+/**
+ * Get the validation rules that apply to the request.
+ *
+ * @return array
+ */
+public function rules()
+{
+    return [
+        'phone' => 'required|digits:11',
+        'pro_class' => 'required',
+        'email' => 'required|email'
+    ];
+}
+```
 
 然后修改update方法(别忘了在类外引入StudentMesRequest, 即use App\Http\Requests\StudentMesRequest;):
 
-    public function update(StudentMesRequest $request)
-    {
-        Auth::user()->update($request->all());
+```php
+public function update(StudentMesRequest $request)
+{
+    Auth::user()->update($request->all());
 
-        return Redirect::route('stu_home');
-    }
+    return Redirect::route('stu_home');
+}
+```
 
 以上两种方法都可以完成验证功能(看自己喜好吧,使用后者代码比较简洁,模块化,前面的登录也可以这样来写,你可以跳转回去试试),如果现在乱填表单,我们依旧可以看到错误提示,而且错误提示会自动消失,因为我们在edit.blade.php中添加了 @include('errors.list')
 
@@ -851,6 +893,7 @@ aliases数组中添加
 
 找到Grade.php,添加:
 
+```php
     protected $table = 'grades';
 
     protected $fillable = [
@@ -901,6 +944,7 @@ aliases数组中添加
     {
         Schema::drop('grades');
     }
+```
 
 这里有一点要说的,关于外键,我很多时候创建外键都不是一次成功的,我感觉我每次在这里都会出点问题,所以,大家要是创建成功,一定要有耐心,后面在phpMyAdmin里查看数据表会有惊喜,留给你去发现(我就不多说了),总之,这里不能跳过,对照源码,查阅资料,花点时间.
 
@@ -940,19 +984,21 @@ aliases数组中添加
 
 接着创建stu/grade.blade.php:
 
-    <button type="button" class="btn btn-warning"
-    data-container="body" data-toggle="popover" data-placement="bottom"
-    title="{{ Auth::user()->name }}--成绩"
-    data-content="
-        ************** 高数 -- {{ $grade->math }} **************
-        ************** 英语 -- {{ $grade->english }} **************
-        ************ C语言 -- {{ $grade->c }} **************
-        ************** 体育 -- {{ $grade->sport }} **************
-        ************** 思修 -- {{ $grade->think }} **************
-        ************** 软件 -- {{ $grade->soft }} **************
-    ">
-        点击,查看成绩
-    </button>
+```php
+<button type="button" class="btn btn-warning"
+data-container="body" data-toggle="popover" data-placement="bottom"
+title="{{ Auth::user()->name }}--成绩"
+data-content="
+    ************** 高数 -- {{ $grade->math }} **************
+    ************** 英语 -- {{ $grade->english }} **************
+    ************ C语言 -- {{ $grade->c }} **************
+    ************** 体育 -- {{ $grade->sport }} **************
+    ************** 思修 -- {{ $grade->think }} **************
+    ************** 软件 -- {{ $grade->soft }} **************
+">
+    点击,查看成绩
+</button>
+```
 
 那么,这个$grade从何而来,我们回到StudentController,修改home方法:
 
@@ -981,14 +1027,16 @@ aliases数组中添加
 
 接着来添加我们的后台路由:
 
-    #查看成绩排名
-    Route::get('admin/grade', [
-        'as' => 'grade_list', 'uses' => 'Admin\GradeController@index']);
-    #上传分数
-    Route::post('admin/upload_grade', [
-        'as' => 'upload_grade', 'uses' => 'Admin\AdminController@upload_grade']);
-    #资源控制器,学生的增删改查
-    Route::resource('admin', 'Admin\AdminController');
+```php
+#查看成绩排名
+Route::get('admin/grade', [
+    'as' => 'grade_list', 'uses' => 'Admin\GradeController@index']);
+#上传分数
+Route::post('admin/upload_grade', [
+    'as' => 'upload_grade', 'uses' => 'Admin\AdminController@upload_grade']);
+#资源控制器,学生的增删改查
+Route::resource('admin', 'Admin\AdminController');
+```
 
 首先来看看我们的资源控制器, [官方文档](http://www.golaravel.com/laravel/docs/5.0/controllers/), 运行(注意路径):
 
@@ -1011,26 +1059,30 @@ aliases数组中添加
 
 进入到isAdmin.php:
 
-    public function handle($request, Closure $next)
-    {
-        if (!Auth::check()) {
-            return Redirect::route('login');
-        } else {
-            if (!Auth::user()->is_admin) {
-                session()->flash('message_warning', '您不是管理员！无法进入相关区域');
-                return Redirect::route('stu_home');
-            }
+```php
+public function handle($request, Closure $next)
+{
+    if (!Auth::check()) {
+        return Redirect::route('login');
+    } else {
+        if (!Auth::user()->is_admin) {
+            session()->flash('message_warning', '您不是管理员！无法进入相关区域');
+            return Redirect::route('stu_home');
         }
-        return $next($request);
     }
+    return $next($request);
+}
+```
 
 过滤没有登录的用户,重定向到登录页,过滤普通登录用户,重定向到学生登录首页,而且，返回一条警告信息,提示那是管理员区域.打开我们的flash.blade.php,增加:
 
-    @if (Session::has('message_warning'))
-        <div class="alert alert-warning">
-            {{ session('message_warning') }}
-        </div>
-    @endif
+```html
+@if (Session::has('message_warning'))
+    <div class="alert alert-warning">
+        {{ session('message_warning') }}
+    </div>
+@endif
+```
 
 现在来测试我们的中间件工作如何
 
@@ -1044,73 +1096,77 @@ aliases数组中添加
 
 下面,继续查看AdminController中的index方法:
 
-    public function index()
-    {
-        $result = User::where('is_admin', 0);
-        $count = $result->count();
-        $users = $result->paginate(10);
-        return view('Admin.index', compact('users', 'count'));
-    }
+```php
+public function index()
+{
+    $result = User::where('is_admin', 0);
+    $count = $result->count();
+    $users = $result->paginate(10);
+    return view('Admin.index', compact('users', 'count'));
+}
+```
 
 $count,是学生数量,先传入,后面要使用,$users,这里我不知道怎么说,就是可以实现分页功能,参考官方文档,[Link](http://www.golaravel.com/laravel/docs/5.0/pagination/),代表我后面的视图文件中需要分页,每页显示10个user信息.接下来新建我们的视图文件 Admin/index.blade.php
 
-    @extends('master')
+```html
+@extends('master')
 
-    @section('title')
-        管理员
-    @stop
+@section('title')
+    管理员
+@stop
 
-    @section('content')
-        <div class="container">
-            <div class="row">
-                <div class="col-md-10">
+@section('content')
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10">
 
-                    @include('errors.list')
+                @include('errors.list')
 
-                    <h3 align="center">学生信息表</h3>
-                    <table class="table table-hover">
-                        <tr>
-                            <td>学号</td>
-                            <td>姓名</td>
-                            <td>性别</td>
-                            <td>手机</td>
-                            <td>班级</td>
-                            <td>邮箱</td>
-                            <td>操作</td>
-                        </tr>
-                        @if (count($users))
-                            @foreach ($users as $user)
-                                <tr>
-                                    <td>{{ $user->id }}</td>
-                                    <td>{{ $user->name }}</td>
-                                    <td>{{ $user->sex }}</td>
-                                    <td>{{ $user->phone }}</td>
-                                    <td>{{ $user->pro_class }}</td>
-                                    <td>{{ $user->email }}</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#myModal{{$user->id}}">更新分数</button>
-                                        <form action="{{ url('admin/'.$user->id) }}" style='display: inline' method="post">
-                                            <input type="hidden" name="_method" value="DELETE">
-                                            <input type="hidden" name="_token" value="{{csrf_token()}}">
-                                            <button class="btn btn-sm btn-danger" onclick="return confirm('确定删除?')">删除</button>
-                                        </form>
-                                    </td>
-                                </tr>
+                <h3 align="center">学生信息表</h3>
+                <table class="table table-hover">
+                    <tr>
+                        <td>学号</td>
+                        <td>姓名</td>
+                        <td>性别</td>
+                        <td>手机</td>
+                        <td>班级</td>
+                        <td>邮箱</td>
+                        <td>操作</td>
+                    </tr>
+                    @if (count($users))
+                        @foreach ($users as $user)
+                            <tr>
+                                <td>{{ $user->id }}</td>
+                                <td>{{ $user->name }}</td>
+                                <td>{{ $user->sex }}</td>
+                                <td>{{ $user->phone }}</td>
+                                <td>{{ $user->pro_class }}</td>
+                                <td>{{ $user->email }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#myModal{{$user->id}}">更新分数</button>
+                                    <form action="{{ url('admin/'.$user->id) }}" style='display: inline' method="post">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <input type="hidden" name="_token" value="{{csrf_token()}}">
+                                        <button class="btn btn-sm btn-danger" onclick="return confirm('确定删除?')">删除</button>
+                                    </form>
+                                </td>
+                            </tr>
 
-                                read1
+                            read1
 
-                            @endforeach
-                        @else
-                            <h1>没有学生名单,请管理员添加</h1>
-                        @endif
-                    </table>
-                    <?php echo $users->render(); ?>
-                </div>
-                read2
+                        @endforeach
+                    @else
+                        <h1>没有学生名单,请管理员添加</h1>
+                    @endif
+                </table>
+                <?php echo $users->render(); ?>
             </div>
-
+            read2
         </div>
-    @stop
+
+    </div>
+@stop
+```
 
 注意两个 read 区域,后面用来填充其他功能,这个时候登录管理员帐号密码,你应该能看到下面的效果
 
@@ -1119,26 +1175,30 @@ $count,是学生数量,先传入,后面要使用,$users,这里我不知道怎么
 <?php echo $users->render(); ?>  输出分页列表,现在我们只有两组数据,所以暂时看不到,待会完成添加学生的功能之后再来测试这个效果.我们先做删除功能,可以看到删除按钮提交到
 http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐藏输入域,告诉路由,这个请求对应这资源控制器的 destory 方法,我们来完成
 
-    public function destroy(User $user)
-    {
-        $name = $user->name;
-        $user->delete();
-        session()->flash('message', $name."同学已经被移除");
-        return Redirect::back();
-    }
+```php
+public function destroy(User $user)
+{
+    $name = $user->name;
+    $user->delete();
+    session()->flash('message', $name."同学已经被移除");
+    return Redirect::back();
+}
+```
 
 看到参数 User $user, 为什么不是id,你一定会这样想.我们打开 App/Http/Provider/RouteServiceProvider.php,修改boot方法,这里我们可以查阅官方文档,[路由模型绑定](http://www.golaravel.com/laravel/docs/5.0/routing/)
 
-    public function boot(Router $router)
-    {
-        parent::boot($router);
+```php
+public function boot(Router $router)
+{
+    parent::boot($router);
 
-        $router->bind('admin', function($id){
-            return \App\User::findOrFail($id);
-        });
+    $router->bind('admin', function($id){
+        return \App\User::findOrFail($id);
+    });
 
-        //$router->model('admin', 'App/User');
-    }
+    //$router->model('admin', 'App/User');
+}
+```
 
 上面两种写法都行,看个人喜好.上面写法比较直观,相信你现在也知道了destory方法参数为什么可以那样写了,你可以在destory中dd($user);在浏览器中点击删除,确定删除,就可以看到页面中输出对应的user信息,下面,去掉destory中dd($user),刷新,可以看到对应同学消失,并且出现提示信息,还是贴个图片,我觉得这样能反馈一些信息.
 
@@ -1150,18 +1210,20 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 
 接着新建Admin/right_bar.blade.php:
 
-    <div class="col-md-2">
-        <h3>总人数: {{ $count }}</h3>
-        <a href="/admin"><button class="btn btn-success btn-lg">学生列表</button></a>
-        <br /><br />
-        <a href="/admin/create"><button class="btn btn-primary btn-lg">添加学生</button></a>
-        <br /><br />
-        <a href="/admin/grade"><button class="btn btn-info btn-lg">成绩排名</button></a>
-        <br /><br />
-        <a href="{{ URL::route('download_stu_list_excel') }}"><button class="btn btn-default btn-lg">下载名单</button></a>
-        <br /><br />
-        <a href="{{ URL::route('download_grade_list_excel') }}"><button class="btn btn-lg btn-default">导出成绩</button></a>
-    </div>
+```html
+<div class="col-md-2">
+    <h3>总人数: {{ $count }}</h3>
+    <a href="/admin"><button class="btn btn-success btn-lg">学生列表</button></a>
+    <br /><br />
+    <a href="/admin/create"><button class="btn btn-primary btn-lg">添加学生</button></a>
+    <br /><br />
+    <a href="/admin/grade"><button class="btn btn-info btn-lg">成绩排名</button></a>
+    <br /><br />
+    <a href="{{ URL::route('download_stu_list_excel') }}"><button class="btn btn-default btn-lg">下载名单</button></a>
+    <br /><br />
+    <a href="{{ URL::route('download_grade_list_excel') }}"><button class="btn btn-lg btn-default">导出成绩</button></a>
+</div>
+```
 
 学生列表 -- 返回学生列表,即 http://localhost:8000/admin
 
@@ -1175,55 +1237,59 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 
 添加学生,对应AdminController中的create方法:
 
-    public function create(){
-        $result = User::where('is_admin', 0);
-        $count = $result->count();
-        return view('Admin.create', compact('count'));
-    }
+```php
+public function create(){
+    $result = User::where('is_admin', 0);
+    $count = $result->count();
+    return view('Admin.create', compact('count'));
+}
+```
 
 接着去创建Admin/create.blade.php:
 
-    @extends('master')
+```html
+@extends('master')
 
-    @section('title')
-        添加学生
-    @stop
+@section('title')
+    添加学生
+@stop
 
-    @section('content')
-        <div class="container">
-            <div class="row">
-                <div class="col-md-10">
-                    <h2>添加学生</h2>
-                    <hr />
+@section('content')
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10">
+                <h2>添加学生</h2>
+                <hr />
 
-                    @include('errors.list')
+                @include('errors.list')
 
-                    <div class="form-group">
-                        {!! Form::model($user = new \App\User, ['url' => 'admin/', 'class' => 'form-horizontal']) !!}
-                            <div class="form-group">
-                                {!! Form::label('id', '学号: ', ['class' => 'control-label col-md-1']) !!}
-                                <div class="col-md-4">
-                                    {!! Form::text('id', old('id'), ['class' => 'form-control']) !!}
-                                </div>
+                <div class="form-group">
+                    {!! Form::model($user = new \App\User, ['url' => 'admin/', 'class' => 'form-horizontal']) !!}
+                        <div class="form-group">
+                            {!! Form::label('id', '学号: ', ['class' => 'control-label col-md-1']) !!}
+                            <div class="col-md-4">
+                                {!! Form::text('id', old('id'), ['class' => 'form-control']) !!}
                             </div>
-                            <div class="form-group">
-                                {!! Form::label('name', '姓名: ', ['class' => 'control-label col-md-1']) !!}
-                                <div class="col-md-4">
-                                    {!! Form::text('name', old('name'), ['class' => 'form-control', 'required']) !!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            {!! Form::label('name', '姓名: ', ['class' => 'control-label col-md-1']) !!}
+                            <div class="col-md-4">
+                                {!! Form::text('name', old('name'), ['class' => 'form-control', 'required']) !!}
                             </div>
-                            <div class="form-group">
-                                <div class="col-md-5">
-                                    {!! Form::submit('完成,创建', ['class' => 'btn btn-success form-control']) !!}
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-5">
+                                {!! Form::submit('完成,创建', ['class' => 'btn btn-success form-control']) !!}
                             </div>
-                        {!! Form::close() !!}
-                    </div>
+                        </div>
+                    {!! Form::close() !!}
                 </div>
-                @include('Admin.right_bar')
             </div>
+            @include('Admin.right_bar')
         </div>
-    @stop
+    </div>
+@stop
+```
 
 点击添加学生:
 
@@ -1231,21 +1297,23 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 
 这里我们Form::model(obj, [options]),传入一个新的对象$user, 这里可以查看 /vendor/illuminate/html/FormBuilder.php中的model方法,Form自动帮你填好表单,这里因为是新建,表单为空,后面你就明白了. 接着看我们的url地址, http://localhost:8000/admin,对应控制器中的store方法,
 
-    public function store(Request $request)
-    {
-        $this->validate($request, [
-            'id' => 'required|digits:10|unique:users',
-            ]);
-        $user = new User;
-        $user->id = $request->id;
-        $user->name = $request->name;
-        $user->password = Hash::make($user->id);
-        $user->save();
-        session()->flash('message', $user->name."同学添加成功");
-        DB::insert('insert into grades (user_id, math, english, c, sport, think,soft)
-            values (?,?,?,?,?,?,?)', [$request->id,null,null,null,null,null,null]);
-        return Redirect::to('admin');
-    }
+```php
+public function store(Request $request)
+{
+    $this->validate($request, [
+        'id' => 'required|digits:10|unique:users',
+        ]);
+    $user = new User;
+    $user->id = $request->id;
+    $user->name = $request->name;
+    $user->password = Hash::make($user->id);
+    $user->save();
+    session()->flash('message', $user->name."同学添加成功");
+    DB::insert('insert into grades (user_id, math, english, c, sport, think,soft)
+        values (?,?,?,?,?,?,?)', [$request->id,null,null,null,null,null,null]);
+    return Redirect::to('admin');
+}
+```
 
 我解释一下,这里,也就是我的思路,管理员只能添加学生初始化它的学号,姓名,密码(默认为学号),同时在grades表中添加对应的一条记录,至于写法为什么这么不优雅！因为我尝试其他的都不行,你有兴趣可以试试,有好的方法也可以提交给我,创建成功后返回admin并提示信息.
 
@@ -1265,55 +1333,57 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 
 创建Admin/upload_grade.blade.php:
 
-    <div class="modal fade" id="myModal{{ $user->id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
+```html
+<div class="modal fade" id="myModal{{ $user->id }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
 
-                <div class="modal-header">
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                  <h4 class="modal-title" id="myModalLabel">{{ $user->name }}</h4>
-                </div>
-                {!! Form::model($user->grade, ['url' => '/admin/upload_grade', 'class' => 'form-horizontal']) !!}
-
-                  <div class="modal-body">
-
-                    {!! Form::hidden('user_id', $user->id) !!}
-                    <h4>
-                      {!! Form::label('math', '高数: ', ['class' => 'control-label']) !!}
-                      {!! Form::text('math', null, ['class' => 'form-control', 'required']) !!}
-                    </h4>
-                    <h4>
-                      {!! Form::label('english', '英语: ', ['class' => 'control-label']) !!}
-                      {!! Form::text('english', null, ['class' => 'form-control', 'required']) !!}
-                    </h4>
-                    <h4>
-                      {!! Form::label('c', 'C语言: ', ['class' => 'control-label']) !!}
-                      {!! Form::text('c', null, ['class' => 'form-control', 'required']) !!}
-                    </h4>
-                    <h4>
-                      {!! Form::label('sport', '体育: ', ['class' => 'control-label']) !!}
-                      {!! Form::text('sport', null, ['class' => 'form-control', 'required']) !!}
-                    </h4>
-                    <h4>
-                      {!! Form::label('think', '思修: ', ['class' => 'control-label']) !!}
-                      {!! Form::text('think', null, ['class' => 'form-control', 'required']) !!}
-                    </h4>
-                    <h4>
-                      {!! Form::label('soft', '软件: ', ['class' => 'control-label']) !!}
-                      {!! Form::text('soft', null, ['class' => 'form-control', 'required']) !!}
-                    </h4>
-
-                  </div>
-
-                  <div class="modal-footer">
-                    {!! Form::button('关闭', ['class' => 'btn btn-default', 'data-dismiss' => 'modal']) !!}
-                    {!! Form::submit('提交', ['class' => 'btn btn-success']) !!}
-                  </div>
-
-                {!! Form::close() !!}
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="myModalLabel">{{ $user->name }}</h4>
             </div>
+            {!! Form::model($user->grade, ['url' => '/admin/upload_grade', 'class' => 'form-horizontal']) !!}
+
+              <div class="modal-body">
+
+                {!! Form::hidden('user_id', $user->id) !!}
+                <h4>
+                  {!! Form::label('math', '高数: ', ['class' => 'control-label']) !!}
+                  {!! Form::text('math', null, ['class' => 'form-control', 'required']) !!}
+                </h4>
+                <h4>
+                  {!! Form::label('english', '英语: ', ['class' => 'control-label']) !!}
+                  {!! Form::text('english', null, ['class' => 'form-control', 'required']) !!}
+                </h4>
+                <h4>
+                  {!! Form::label('c', 'C语言: ', ['class' => 'control-label']) !!}
+                  {!! Form::text('c', null, ['class' => 'form-control', 'required']) !!}
+                </h4>
+                <h4>
+                  {!! Form::label('sport', '体育: ', ['class' => 'control-label']) !!}
+                  {!! Form::text('sport', null, ['class' => 'form-control', 'required']) !!}
+                </h4>
+                <h4>
+                  {!! Form::label('think', '思修: ', ['class' => 'control-label']) !!}
+                  {!! Form::text('think', null, ['class' => 'form-control', 'required']) !!}
+                </h4>
+                <h4>
+                  {!! Form::label('soft', '软件: ', ['class' => 'control-label']) !!}
+                  {!! Form::text('soft', null, ['class' => 'form-control', 'required']) !!}
+                </h4>
+
+              </div>
+
+              <div class="modal-footer">
+                {!! Form::button('关闭', ['class' => 'btn btn-default', 'data-dismiss' => 'modal']) !!}
+                {!! Form::submit('提交', ['class' => 'btn btn-success']) !!}
+              </div>
+
+            {!! Form::close() !!}
         </div>
     </div>
+</div>
+```
 
 现在刷新浏览器,点击更新分数
 
@@ -1321,20 +1391,22 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 
 接下来就可以完成分数的上传功能,打开AdminController,添加:
 
-    public function upload_grade(Request $request)
-    {
-        $this->validate($request, Grade::rules());
-        $grade = Grade::where('user_id', $request->user_id)->first();
-        $grade->math = $request->math;
-        $grade->english = $request->english;
-        $grade->c = $request->c;
-        $grade->sport = $request->sport;
-        $grade->think = $request->think;
-        $grade->soft = $request->soft;
-        $grade->save();
-        session()->flash('message', '成绩提交成功');
-        return Redirect::back();
-    }
+```php
+public function upload_grade(Request $request)
+{
+    $this->validate($request, Grade::rules());
+    $grade = Grade::where('user_id', $request->user_id)->first();
+    $grade->math = $request->math;
+    $grade->english = $request->english;
+    $grade->c = $request->c;
+    $grade->sport = $request->sport;
+    $grade->think = $request->think;
+    $grade->soft = $request->soft;
+    $grade->save();
+    session()->flash('message', '成绩提交成功');
+    return Redirect::back();
+}
+```
 
 这里有个地方有点问题,分数应该是0-100,参考前面Grade.php中的静态方法
 
@@ -1352,66 +1424,70 @@ http://localhost:8000/admin/1210311232, form表单里面有个值为DELETE的隐
 
 两个方法:
 
-    public function __construct()
-    {
-        $this->middleware('admin');
-    }
+```php
+public function __construct()
+{
+    $this->middleware('admin');
+}
 
-    public function index()
-    {
-        $result = User::where('is_admin', 0);
-        $users = $result->get();
-        $count = $result->count();
-        return view('Admin.list', compact('count', 'users'));
-    }
+public function index()
+{
+    $result = User::where('is_admin', 0);
+    $users = $result->get();
+    $count = $result->count();
+    return view('Admin.list', compact('count', 'users'));
+}
+```
 
 $users是我们的学生信息资源,传递到Admin/list.blade.php视图.
 
-    @extends('master')
+```html
+@extends('master')
 
-    @section('title')
-        学生成绩列表
-    @stop
+@section('title')
+    学生成绩列表
+@stop
 
-    @section('content')
-        <div class="container">
-            <div class="row">
-                <div class="col-md-10">
-                    <h3 align="center">学生成绩表</h3>
-                    <table class="table table-striped" id="sortTable">
-                        <thead>
-                            <tr>
-                                <th class="col-md-2">学号 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                                <th>姓名 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                                <th>高数 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                                <th>英语 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                                <th>C语言 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                                <th>体育 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                                <th>思修 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                                <th>软件 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
-                            </tr>
-                        </thead>
+@section('content')
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10">
+                <h3 align="center">学生成绩表</h3>
+                <table class="table table-striped" id="sortTable">
+                    <thead>
+                        <tr>
+                            <th class="col-md-2">学号 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            <th>姓名 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            <th>高数 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            <th>英语 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            <th>C语言 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            <th>体育 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            <th>思修 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                            <th>软件 <a href="javascript:void(0)"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span></a></th>
+                        </tr>
+                    </thead>
 
-                        @foreach ($users as $user)
-                            <tr>
-                                <td>{{$user->id}}</td>
-                                <td>{{$user->name}}</td>
-                                <td>{{$user->grade->math}}</td>
-                                <td>{{$user->grade->english}}</td>
-                                <td>{{$user->grade->c}}</td>
-                                <td>{{$user->grade->sport}}</td>
-                                <td>{{$user->grade->think}}</td>
-                                <td>{{$user->grade->soft}}</td>
-                            </tr>
-                        @endforeach
-                    </table>
-                </div>
-
-                @include('Admin.right_bar')
-
+                    @foreach ($users as $user)
+                        <tr>
+                            <td>{{$user->id}}</td>
+                            <td>{{$user->name}}</td>
+                            <td>{{$user->grade->math}}</td>
+                            <td>{{$user->grade->english}}</td>
+                            <td>{{$user->grade->c}}</td>
+                            <td>{{$user->grade->sport}}</td>
+                            <td>{{$user->grade->think}}</td>
+                            <td>{{$user->grade->soft}}</td>
+                        </tr>
+                    @endforeach
+                </table>
             </div>
+
+            @include('Admin.right_bar')
+
         </div>
-    @stop
+    </div>
+@stop
+```
 
 在浏览其中点击成绩排名,你能看到所有人的成绩表吧
 
