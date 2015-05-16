@@ -159,6 +159,8 @@
 
 然后导入我们的数据表,填充默认数据进行测试。
 
+执行   php artisan make:model User, 生成新的数据转移文件
+
 打开 /database/migrations/._create_users_table.php,修改up方法
 
 ```php
