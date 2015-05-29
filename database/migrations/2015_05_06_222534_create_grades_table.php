@@ -15,7 +15,7 @@ class CreateGradesTable extends Migration {
 		Schema::create('grades', function(Blueprint $table)
 		{
 			$table->increments('id');
-			$table->integer('user_id')->unsigned()->unique()->index();
+			$table->bigInteger('user_id')->unsigned()->unique()->index();
 			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 			$table->integer('math')->nullable();
 			$table->integer('english')->nullable();
