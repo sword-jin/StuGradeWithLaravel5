@@ -1986,3 +1986,10 @@ Click here to reset your password: {{ url('password/reset/'.$token) }}
 * 你可以在 /resources/lang/en/passwords.php下查看修改密码的一些提示信息,你也可以按照自己的想法去修改他们
 
 * 你可以在 /vendor/laravel/framework/src/Illuminate/Foundation/Auth/ResetPasswords.php 看到修改密码功能实现的各个细节,包括更改密码视图地址,更改成功后自动执行登录等,可以去看看.
+
+#### 修正:
+当初创建学生无法初始化grade是没有道理的，现在你可以直接这样了，修改AdminController，干掉那段不干净的代码吧!
+
+   $grade = new Grade;
+   $grade->user_id = $reuqest->id;
+   $grade->save();
