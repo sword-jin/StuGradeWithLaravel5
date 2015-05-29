@@ -1990,6 +1990,6 @@ Click here to reset your password: {{ url('password/reset/'.$token) }}
 #### 修正:
 当初创建学生无法初始化grade是没有道理的，现在你可以直接这样了，修改AdminController，干掉那段不干净的代码吧!
 
-   $grade = new Grade;
-   $grade->user_id = $reuqest->id;
-   $grade->save();
+    $grade = new Grade;
+    $grade->user_id = $reuqest->id;
+    $grade->save();
