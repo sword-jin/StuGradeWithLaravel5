@@ -42,8 +42,9 @@ class AdminController extends Controller {
         $user->password = Hash::make($user->id);
         $user->save();
         session()->flash('message', $user->name."同学添加成功");
-        DB::insert('insert into grades (user_id, math, english, c, sport, think,soft)
-            values (?,?,?,?,?,?,?)', [$request->id,null,null,null,null,null,null]);
+        $grade = new Grade;
+	    $grade->user_id = $request->id;
+	    $grade->save();
         return Redirect::to('admin');
     }
 
