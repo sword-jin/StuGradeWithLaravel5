@@ -3,3 +3,6 @@
 .env.php
 .env
 /vendor
+
+# ignore dependency directory after npm install 
+node_modules
