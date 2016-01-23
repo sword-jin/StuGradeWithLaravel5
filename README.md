@@ -1,3 +1,5 @@
+> 本教程是5.0的laravel，最新资料请关注 [RryLee](http://rrylee.github.io) 和 [RryTip](http://rrytip.github.io)
+
 # StuGradeWithLaravel5 
 
 一个简易的学生成绩管理,查询系统,仅供新手学习参考。QQ:215672398 有什么好的想法,或是建议,不明白的都可以来找我讨论。
